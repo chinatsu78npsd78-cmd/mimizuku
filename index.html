@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>みみずく — ちゆの受験アプリ</title>
+<meta name="theme-color" content="#EC5A76">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="みみずく">
+</head>
+<body>
+
+<style>
+  :root{
+    --ground:#FFF7F1; --surface:#FFFFFF; --tint:#FFEEF1; --tint2:#FFF3E6;
+    --ink:#3B2233; --ink-soft:#8A6B7C; --line:#F2DCE0;
+    --primary:#EC5A76; --primary-deep:#D43F5E; --on-primary:#FFFFFF;
+    --mint:#1EAF95; --mint-soft:#D7F3EC; --mint-ink:#0C6D5C;
+    --gold:#F5A63C; --gold-soft:#FCE9CC;
+    --shadow:0 10px 30px -12px rgba(59,34,51,.28);
+    --shadow-sm:0 4px 14px -8px rgba(59,34,51,.30);
+    --r-lg:26px; --r-md:18px; --r-sm:12px;
+    --fnt-jp:"Hiragino Maru Gothic ProN","ヒラギノ丸ゴ ProN W4","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;
+    --fnt-round:"SF Pro Rounded",ui-rounded,"Hiragino Maru Gothic ProN",var(--fnt-jp);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#211423; --surface:#2E1F2D; --tint:#3A2839; --tint2:#3A2E28;
+      --ink:#FBEEF0; --ink-soft:#C6A6B6; --line:#432F3F;
+      --primary:#FF6E88; --primary-deep:#FF90A4; --on-primary:#2A0E17;
+      --mint:#37C9AE; --mint-soft:#173A36; --mint-ink:#8DEBD9;
+      --gold:#F7B75E; --gold-soft:#3B2E1C;
+      --shadow:0 12px 34px -14px rgba(0,0,0,.6);
+      --shadow-sm:0 5px 16px -10px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#211423; --surface:#2E1F2D; --tint:#3A2839; --tint2:#3A2E28;
+    --ink:#FBEEF0; --ink-soft:#C6A6B6; --line:#432F3F;
+    --primary:#FF6E88; --primary-deep:#FF90A4; --on-primary:#2A0E17;
+    --mint:#37C9AE; --mint-soft:#173A36; --mint-ink:#8DEBD9;
+    --gold:#F7B75E; --gold-soft:#3B2E1C;
+    --shadow:0 12px 34px -14px rgba(0,0,0,.6);
+    --shadow-sm:0 5px 16px -10px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --ground:#FFF7F1; --surface:#FFFFFF; --tint:#FFEEF1; --tint2:#FFF3E6;
+    --ink:#3B2233; --ink-soft:#8A6B7C; --line:#F2DCE0;
+    --primary:#EC5A76; --primary-deep:#D43F5E; --on-primary:#FFFFFF;
+    --mint:#1EAF95; --mint-soft:#D7F3EC; --mint-ink:#0C6D5C;
+    --gold:#F5A63C; --gold-soft:#FCE9CC;
+    --shadow:0 10px 30px -12px rgba(59,34,51,.28);
+    --shadow-sm:0 4px 14px -8px rgba(59,34,51,.30);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--fnt-jp); background:var(--ground); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    background-image:radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--primary) 10%, transparent) 0, transparent 42%),
+                     radial-gradient(circle at 88% 4%, color-mix(in srgb, var(--gold) 12%, transparent) 0, transparent 40%);
+    background-attachment:fixed;
+  }
+  .app{max-width:480px; margin:0 auto; min-height:100%; display:flex; flex-direction:column; padding:0 16px 26px}
+
+  .hud{position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px;
+    padding:14px 4px 12px; background:linear-gradient(var(--ground) 72%, transparent)}
+  .brand{display:flex; align-items:center; gap:9px; margin-right:auto; cursor:pointer; background:none;border:0;color:inherit;font-family:inherit}
+  .brand b{font-family:var(--fnt-round); font-weight:800; font-size:20px; letter-spacing:.02em}
+  .brand small{display:block; font-size:10px; color:var(--ink-soft); letter-spacing:.14em; margin-top:-2px}
+  .pill{display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:999px;
+    background:var(--surface); box-shadow:var(--shadow-sm); font-family:var(--fnt-round); font-weight:800;
+    font-size:14px; font-variant-numeric:tabular-nums; line-height:1}
+  .pill.streak{color:var(--gold)}
+  .pill.points{color:var(--primary-deep)}
+  .pill svg{width:15px;height:15px}
+
+  .card{background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:22px}
+
+  .hero{position:relative; overflow:hidden; text-align:center; padding-top:12px}
+  .hero .owlwrap{width:126px;height:126px;margin:2px auto 6px}
+  .speech{display:inline-block; max-width:300px; margin:2px auto 0; padding:12px 16px; border-radius:18px 18px 18px 6px;
+    background:var(--tint); color:var(--ink); font-weight:700; font-size:15px}
+  .lvrow{display:flex; align-items:center; gap:12px; margin-top:18px}
+  .lvbadge{flex:0 0 auto; width:52px;height:52px;border-radius:16px; display:grid;place-items:center;
+    background:linear-gradient(140deg,var(--primary),var(--primary-deep)); color:var(--on-primary);
+    font-family:var(--fnt-round); font-weight:800; line-height:1}
+  .lvbadge small{display:block;font-size:9px;opacity:.85;letter-spacing:.1em}
+  .lvbadge span{font-size:20px}
+  .lvmeter{flex:1}
+  .lvmeter .lbl{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); margin-bottom:5px; font-weight:700}
+  .bar{height:12px;border-radius:999px;background:var(--tint);overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--primary));
+    width:0; transition:width .7s cubic-bezier(.2,.9,.2,1)}
+
+  .cta{width:100%; margin-top:18px; border:0; cursor:pointer; font-family:var(--fnt-round); font-weight:800;
+    font-size:19px; color:var(--on-primary); padding:18px; border-radius:20px;
+    background:linear-gradient(140deg,var(--primary),var(--primary-deep));
+    box-shadow:0 12px 24px -10px color-mix(in srgb,var(--primary) 70%, transparent); letter-spacing:.02em;
+    transition:transform .12s ease}
+  .cta:active{transform:translateY(2px) scale(.99)}
+  .cta .sub{display:block;font-size:12px;font-weight:700;opacity:.9;letter-spacing:.06em;margin-top:2px}
+
+  .sechead{display:flex;align-items:baseline;gap:8px;margin:26px 4px 12px}
+  .sechead h2{font-family:var(--fnt-round);font-weight:800;font-size:16px}
+  .sechead span{font-size:11px;color:var(--ink-soft);font-weight:700;margin-left:auto}
+
+  .subjects{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .subj{position:relative; text-align:left; border:0; cursor:pointer; font-family:inherit; color:var(--ink);
+    background:var(--surface); border-radius:var(--r-md); padding:15px 15px 14px; box-shadow:var(--shadow-sm);
+    display:flex; flex-direction:column; gap:10px; transition:transform .12s ease}
+  .subj:active{transform:scale(.97)}
+  .subj .top{display:flex;align-items:center;gap:10px}
+  .subj .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;
+    font-family:var(--fnt-round);font-weight:800;font-size:17px;color:#fff}
+  .subj .nm{font-weight:800;font-size:15px}
+  .subj .nm em{display:block;font-style:normal;font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-top:1px}
+  .ear{position:absolute; top:11px; right:11px; display:inline-flex; align-items:center; gap:3px;
+    background:var(--mint-soft); color:var(--mint-ink); font-size:9.5px; font-weight:800;
+    padding:3px 7px; border-radius:999px; letter-spacing:.03em}
+  .ear svg{width:10px;height:10px}
+  .mrow{display:flex;align-items:center;gap:8px}
+  .mrow .bar{flex:1;height:8px}
+  .mrow .bar>i{background:var(--mint);transition:width .5s ease}
+  .mrow .cnt{font-family:var(--fnt-round);font-weight:800;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+  /* units view */
+  .utop{display:flex;align-items:center;gap:12px;margin:6px 2px 16px}
+  .utop .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+    font-family:var(--fnt-round);font-weight:800;font-size:20px;color:#fff}
+  .utop h2{font-family:var(--fnt-round);font-weight:800;font-size:20px}
+  .utop p{font-size:11.5px;color:var(--ink-soft);font-weight:700}
+  .ubtns{display:grid;gap:10px;margin-bottom:18px}
+  .ubtn{border:0;cursor:pointer;font-family:var(--fnt-round);font-weight:800;font-size:16px;
+    padding:15px 16px;border-radius:16px;display:flex;align-items:center;gap:10px;text-align:left}
+  .ubtn small{margin-left:auto;font-size:11px;font-weight:700;opacity:.85}
+  .ubtn.main{color:var(--on-primary);background:linear-gradient(140deg,var(--primary),var(--primary-deep));box-shadow:var(--shadow-sm)}
+  .ubtn.rev{background:var(--gold-soft);color:var(--ink)}
+  .ubtn.rev b{color:var(--gold)}
+  .ulist{display:grid;gap:10px}
+  .unit{border:0;cursor:pointer;font-family:inherit;color:var(--ink);background:var(--surface);
+    border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-sm);text-align:left;
+    display:flex;flex-direction:column;gap:8px;transition:transform .1s}
+  .unit:active{transform:scale(.98)}
+  .unit .un{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px}
+  .unit .un .st{margin-left:auto;font-size:11px;font-weight:800;color:var(--mint-ink);background:var(--mint-soft);
+    padding:3px 9px;border-radius:999px}
+  .unit .un .st.zero{color:var(--ink-soft);background:var(--tint)}
+
+  /* quiz */
+  #view-quiz{flex:1; display:flex; flex-direction:column}
+  .qtop{display:flex;align-items:center;gap:10px;margin:6px 2px 14px}
+  .iconbtn{width:40px;height:40px;flex:0 0 auto;border:0;border-radius:12px;background:var(--surface);
+    box-shadow:var(--shadow-sm);cursor:pointer;color:var(--ink);display:grid;place-items:center}
+  .iconbtn svg{width:20px;height:20px}
+  .dots{display:flex;gap:5px;flex:1;align-items:center}
+  .dots i{height:7px;flex:1;border-radius:999px;background:var(--tint);transition:background .3s}
+  .dots i.done{background:var(--mint)}
+  .dots i.cur{background:var(--primary)}
+  .qsubj{font-size:11px;font-weight:800;color:var(--ink-soft);letter-spacing:.08em;white-space:nowrap}
+
+  .qcard{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:24px 20px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px}
+  .qcard .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--primary-deep);
+    background:var(--tint);padding:5px 12px;border-radius:999px}
+  .qtext{font-weight:800;font-size:23px;line-height:1.35;text-wrap:balance;font-family:var(--fnt-round)}
+  .speak{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--primary);color:var(--primary-deep);
+    background:var(--surface);font-family:inherit;font-weight:800;font-size:14px;padding:9px 18px;border-radius:999px;cursor:pointer}
+  .speak svg{width:18px;height:18px}
+  .speak.playing{background:var(--primary);color:var(--on-primary)}
+  @keyframes ring{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--primary) 45%,transparent)}100%{box-shadow:0 0 0 16px transparent}}
+  .speak.playing{animation:ring 1s ease-out infinite}
+
+  .choices{display:grid;gap:11px;margin-top:20px}
+  .choice{position:relative;border:2px solid var(--line);background:var(--surface);color:var(--ink);
+    font-family:var(--fnt-round);font-weight:800;font-size:17px;padding:15px 17px;border-radius:16px;cursor:pointer;
+    text-align:left;display:flex;align-items:center;gap:12px;transition:transform .1s,border-color .15s,background .15s}
+  .choice .key{width:26px;height:26px;flex:0 0 auto;border-radius:8px;background:var(--tint);color:var(--primary-deep);
+    display:grid;place-items:center;font-size:13px}
+  .choice:active{transform:scale(.98)}
+  .choice.correct{border-color:var(--mint);background:var(--mint-soft);color:var(--mint-ink)}
+  .choice.correct .key{background:var(--mint);color:#fff}
+  .choice.wrong{border-color:var(--primary);background:var(--tint);opacity:.9}
+  .choice[disabled]{cursor:default}
+  .choice .mk{margin-left:auto;font-size:20px}
+
+  .fb{margin-top:18px;border-radius:var(--r-md);padding:15px 16px;display:flex;gap:12px;align-items:center;
+    opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s}
+  .fb.show{opacity:1;transform:none}
+  .fb.good{background:var(--mint-soft);color:var(--mint-ink)}
+  .fb.soft{background:var(--tint);color:var(--ink)}
+  .fb .miniowl{width:40px;height:40px;flex:0 0 auto}
+  .fb .txt{font-weight:800;font-size:14px}
+  .fb .txt small{display:block;font-weight:700;font-size:12px;opacity:.85;margin-top:2px}
+  .next{margin-top:16px;width:100%;border:0;cursor:pointer;font-family:var(--fnt-round);font-weight:800;font-size:17px;
+    color:var(--on-primary);padding:16px;border-radius:18px;background:linear-gradient(140deg,var(--primary),var(--primary-deep));
+    box-shadow:var(--shadow-sm)}
+  .next:active{transform:translateY(2px)}
+
+  #view-done .card{text-align:center}
+  .done-owl{width:120px;height:120px;margin:2px auto 4px}
+  .done-h{font-family:var(--fnt-round);font-weight:800;font-size:26px;margin-bottom:4px}
+  .done-sub{color:var(--ink-soft);font-weight:700;font-size:14px}
+  .stats{display:flex;gap:12px;margin:20px 0 6px}
+  .stat{flex:1;background:var(--tint);border-radius:var(--r-md);padding:14px 8px}
+  .stat b{display:block;font-family:var(--fnt-round);font-weight:800;font-size:26px;color:var(--primary-deep);font-variant-numeric:tabular-nums}
+  .stat.mint b{color:var(--mint-ink)}
+  .stat.gold b{color:var(--gold)}
+  .stat span{font-size:11px;color:var(--ink-soft);font-weight:700}
+  .done-msg{margin:16px 0 4px;font-weight:800;font-size:15px}
+  .btnrow{display:flex;gap:11px;margin-top:18px}
+  .btnrow button{flex:1;border:0;cursor:pointer;font-family:var(--fnt-round);font-weight:800;font-size:16px;padding:15px;border-radius:16px}
+  .btn-ghost{background:var(--tint);color:var(--ink)}
+  .btn-main{color:var(--on-primary);background:linear-gradient(140deg,var(--primary),var(--primary-deep));box-shadow:var(--shadow-sm)}
+
+  .foot{display:flex;justify-content:center;gap:18px;margin-top:22px}
+  .foot button{background:none;border:0;color:var(--ink-soft);font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:5px}
+  .foot button svg{width:14px;height:14px}
+
+  .hidden{display:none!important}
+  button:focus-visible,.choice:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+  canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+
+  .owl .eyeopen{display:block}.owl .eyehappy{display:none}
+  .owl.happy .eyeopen{display:none}.owl.happy .eyehappy{display:block}
+  @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+  .owl .eyes{transform-origin:center;transform-box:fill-box;animation:blink 5.5s infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .bob{animation:bob 3.4s ease-in-out infinite}
+</style>
+
+<div class="app">
+  <header class="hud">
+    <button class="brand" onclick="go('home')" aria-label="ホームへ">
+      <span id="brand-owl" style="width:34px;height:34px;display:inline-block"></span>
+      <span><b>みみずく</b><small>MIMIZUKU</small></span>
+    </button>
+    <span class="pill streak" title="れんぞく日数">🔥<span id="hud-streak">0</span></span>
+    <span class="pill points" title="ポイント"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="currentColor" opacity=".2"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v10M9 9.5h4.2a1.8 1.8 0 010 3.6H9m0 0h4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="hud-points">0</span></span>
+  </header>
+
+  <!-- HOME -->
+  <section id="view-home">
+    <div class="card hero">
+      <div class="owlwrap bob"></div>
+      <div class="speech" id="home-msg"></div>
+      <div class="lvrow">
+        <div class="lvbadge"><small>レベル</small><span id="home-lv">1</span></div>
+        <div class="lvmeter">
+          <div class="lbl"><span>つぎのレベルまで</span><span id="home-lvtxt">0 / 100</span></div>
+          <div class="bar"><i id="home-lvbar"></i></div>
+        </div>
+      </div>
+      <button class="cta" onclick="startSession({type:'mix'})">きょうの15分をはじめる<span class="sub">5教科ミックス10問 ・ ぜんぶ読み上げつき</span></button>
+    </div>
+
+    <div class="sechead"><h2>教科をえらぶ</h2><span id="bank-count"></span></div>
+    <div class="subjects" id="subjects"></div>
+
+    <div class="foot">
+      <button onclick="toggleAudio()" id="audiobtn"></button>
+      <button onclick="toggleTheme()">🌓 いろを変える</button>
+      <button onclick="resetAll()"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v6h6M20 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10a8 8 0 00-14-3M4 14a8 8 0 0014 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>さいしょから</button>
+    </div>
+  </section>
+
+  <!-- UNITS -->
+  <section id="view-units" class="hidden">
+    <div class="qtop">
+      <button class="iconbtn" onclick="go('home')" aria-label="もどる"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div class="utop">
+      <span class="ic" id="u-ic"></span>
+      <div><h2 id="u-name"></h2><p id="u-sub"></p></div>
+    </div>
+    <div class="ubtns">
+      <button class="ubtn main" id="u-omakase">おまかせ10問 <small>この教科から</small></button>
+      <button class="ubtn rev hidden" id="u-rev"></button>
+    </div>
+    <div class="ulist" id="ulist"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="view-quiz" class="hidden">
+    <div class="qtop">
+      <button class="iconbtn" onclick="quitSession()" aria-label="やめる"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="dots" id="dots"></div>
+      <span class="qsubj" id="q-subj"></span>
+    </div>
+    <div class="qcard">
+      <span class="tag" id="q-tag">もんだい</span>
+      <div class="qtext" id="q-text"></div>
+      <button class="speak" id="q-speak" onclick="replay()"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8 8 0 010 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>もう一回きく</button>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="fb" id="fb"><span class="miniowl"></span><span class="txt" id="fb-txt"></span></div>
+    <button class="next hidden" id="nextbtn" onclick="nextQ()">つぎへ →</button>
+  </section>
+
+  <!-- DONE -->
+  <section id="view-done" class="hidden">
+    <div class="card">
+      <div class="done-owl bob"></div>
+      <div class="done-h" id="done-h">セット、かんりょう！</div>
+      <div class="done-sub" id="done-sub"></div>
+      <div class="stats">
+        <div class="stat mint"><b id="d-correct">0</b><span>せいかい</span></div>
+        <div class="stat gold"><b id="d-points">0</b><span>ポイント</span></div>
+        <div class="stat"><b id="d-streak">0</b><span>れんぞく日</span></div>
+      </div>
+      <div class="done-msg" id="done-msg"></div>
+      <div class="btnrow">
+        <button class="btn-ghost" onclick="go('home')">ホーム</button>
+        <button class="btn-main" onclick="startSession(lastMode)">もう1セット</button>
+      </div>
+    </div>
+  </section>
+</div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ============================================================
+   みみずく 問題バンク（兵庫県公立入試・基礎〜標準）
+   形式: [問題文, [正解, ダミー1, ダミー2, ダミー3], オプション?]
+   ※正解は必ず先頭。表示時にシャッフルされる。
+   オプション: {say:読み上げ文, en:英語読み上げ, plain:true(答えを読まない)}
+   ============================================================ */
+const BANK = {
+
+/* ================= 数学 89問 ================= */
+math:{name:'数学',sub:'計算で55点とる',color:'#4C86E0',strong:true,units:[
+
+{id:'m1',name:'けいさん① 正負の数',qs:[
+ ['(−3)+(−5) は？',['−8','−2','8','2']],
+ ['(−7)+4 は？',['−3','3','−11','11']],
+ ['5−(−2) は？',['7','3','−7','10']],
+ ['(−6)−3 は？',['−9','−3','3','9']],
+ ['(−4)×3 は？',['−12','12','−7','−1']],
+ ['(−5)×(−6) は？',['30','−30','11','−11']],
+ ['12÷(−4) は？',['−3','3','−8','−48']],
+ ['(−18)÷(−6) は？',['3','−3','12','−12']],
+ ['(−2)³ は？',['−8','8','−6','6']],
+ ['(−3)² は？',['9','−9','6','−6']],
+ ['3−7 は？',['−4','4','−10','10']],
+ ['(−8)+8 は？',['0','−16','16','−64']],
+ ['10÷(−5)×2 は？',['−4','−1','4','1']],
+ ['(−1)×(−1)×(−1) は？',['−1','1','−3','3']],
+]},
+
+{id:'m2',name:'けいさん② 文字式・方程式',qs:[
+ ['2x+3x は？',['5x','6x','5x²','6x²']],
+ ['7a−2a は？',['5a','5','9a','−5a']],
+ ['3(x+2) を計算すると？',['3x+6','3x+2','x+6','3x+5']],
+ ['2(x−1)+3 を計算すると？',['2x+1','2x+2','2x−1','2x+5']],
+ ['4x=20 のとき x は？',['5','4','16','80']],
+ ['x+7=10 のとき x は？',['3','17','−3','7']],
+ ['x−4=9 のとき x は？',['13','5','−5','36']],
+ ['2x+1=9 のとき x は？',['4','5','8','3']],
+ ['3x−2=x+6 のとき x は？',['4','2','−4','8']],
+ ['x÷2=6 のとき x は？',['12','3','4','8']],
+ ['5x−3=2x+9 のとき x は？',['4','3','6','2']],
+ ['−2x=8 のとき x は？',['−4','4','−16','16'],{say:'マイナス2エックスが8のとき、エックスは？'}],
+ ['x+y=5、x−y=1 のとき x は？',['3','2','4','5'],{say:'エックスたすワイが5、エックスひくワイが1のとき、エックスは？'}],
+ ['4a+3b−a+2b を計算すると？',['3a+5b','5a+3b','3a+b','4a+5b']],
+]},
+
+{id:'m3',name:'けいさん③ 展開・因数分解',qs:[
+ ['(x+2)(x+3) を展開すると？',['x²+5x+6','x²+6x+5','x²+5x+5','x²+6']],
+ ['(x+4)² を展開すると？',['x²+8x+16','x²+16','x²+4x+16','x²+8x+8']],
+ ['(x−3)² を展開すると？',['x²−6x+9','x²−9','x²+6x+9','x²−6x−9']],
+ ['(x+5)(x−5) を展開すると？',['x²−25','x²+25','x²−10x−25','x²−5']],
+ ['x²+7x+12 を因数分解すると？',['(x+3)(x+4)','(x+2)(x+6)','(x+1)(x+12)','(x−3)(x−4)']],
+ ['x²−x−6 を因数分解すると？',['(x+2)(x−3)','(x−2)(x+3)','(x+1)(x−6)','(x−1)(x+6)']],
+ ['x²+6x+9 を因数分解すると？',['(x+3)²','(x+9)²','(x+3)(x−3)','(x+6)(x+3)']],
+ ['x²−16 を因数分解すると？',['(x+4)(x−4)','(x−4)²','(x+4)²','(x+8)(x−2)']],
+ ['x²−10x+25 を因数分解すると？',['(x−5)²','(x+5)²','(x−5)(x+5)','(x−10)²']],
+ ['2x²+6x を因数分解すると？',['2x(x+3)','2x(x+6)','x(2x+3)','2(x²+3)']],
+ ['x²+3x+2 を因数分解すると？',['(x+1)(x+2)','(x+1)(x+3)','(x−1)(x−2)','(x+2)²']],
+ ['x²−2x−8 を因数分解すると？',['(x−4)(x+2)','(x+4)(x−2)','(x−8)(x+1)','(x−4)(x−2)']],
+ ['(x+1)(x−2) を展開すると？',['x²−x−2','x²+x−2','x²−2x−1','x²−x+2']],
+ ['x²+x−12 を因数分解すると？',['(x+4)(x−3)','(x−4)(x+3)','(x+6)(x−2)','(x+2)(x−6)']],
+]},
+
+{id:'m4',name:'けいさん④ 平方根',qs:[
+ ['√16 は？',['4','8','2','16']],
+ ['√81 は？',['9','8','3','81']],
+ ['√2×√8 は？',['4','√10','2√2','16']],
+ ['√12 を簡単にすると？',['2√3','3√2','4√3','6']],
+ ['√18 を簡単にすると？',['3√2','2√3','9√2','√6']],
+ ['√27 を簡単にすると？',['3√3','9√3','3','9']],
+ ['2√3+3√3 は？',['5√3','5√6','6√3','5']],
+ ['√50 を簡単にすると？',['5√2','2√5','25√2','10√5']],
+ ['(√5)² は？',['5','25','√10','10']],
+ ['√8÷√2 は？',['2','4','√6','2√2']],
+ ['3 と √10、大きいのはどっち？',['√10','3','同じ','くらべられない'],{say:'3とルート10、おおきいのはどっち？'}],
+ ['√9+√16 は？',['7','5','√25','12']],
+]},
+
+{id:'m5',name:'二次方程式',qs:[
+ ['x²=9 の解は？',['x=3 と −3','x=3 だけ','x=81','x=4.5']],
+ ['x²−5x+6=0 の解は？',['x=2 と 3','x=−2 と −3','x=1 と 6','x=5 と 6']],
+ ['x²+3x=0 の解は？',['x=0 と −3','x=0 と 3','x=−3 だけ','x=3 と −3']],
+ ['(x−4)²=0 の解は？',['x=4','x=−4','x=4 と −4','x=16']],
+ ['x²−1=0 の解は？',['x=1 と −1','x=1 だけ','x=0 と 1','x=2 と −2']],
+ ['x²−2x−3=0 の解は？',['x=3 と −1','x=−3 と 1','x=3 と 1','x=−3 と −1']],
+ ['x²=5 の解は？',['x=√5 と −√5','x=5 と −5','x=√5 だけ','x=2.5']],
+ ['x²+6x+9=0 の解は？',['x=−3','x=3','x=−3 と 3','x=−9']],
+ ['x²−4x=0 の解は？',['x=0 と 4','x=4 だけ','x=0 と −4','x=2 と −2']],
+ ['x²−7x+10=0 の解は？',['x=2 と 5','x=−2 と −5','x=7 と 10','x=2 と −5']],
+]},
+
+{id:'m6',name:'関数（代入でとる）',qs:[
+ ['y=2x+1 で x=3 のとき y は？',['7','6','5','9']],
+ ['y=−x+5 で x=2 のとき y は？',['3','7','−3','10'],{say:'ワイイコール、マイナスエックスたす5。エックスが2のとき、ワイは？'}],
+ ['y=3x−2 の切片（y軸との交点のy）は？',['−2','3','2','−3']],
+ ['y=2x+1 の傾きは？',['2','1','3','−2']],
+ ['傾き3、切片1の直線の式は？',['y=3x+1','y=x+3','y=3x−1','y=−3x+1']],
+ ['y=ax で x=2 のとき y=6。a は？',['3','12','4','2']],
+ ['y=5x で x=4 のとき y は？',['20','9','54','12']],
+ ['y=−2x+3 で x=1 のとき y は？',['1','5','−1','3'],{say:'ワイイコール、マイナス2エックスたす3。エックスが1のとき、ワイは？'}],
+ ['y=x² で x=3 のとき y は？',['9','6','3','12']],
+ ['y=x² で x=−2 のとき y は？',['4','−4','2','−2']],
+ ['反比例 y=6/x で x=2 のとき y は？',['3','12','4','8'],{say:'はんぴれい。ワイは、エックスぶんの6。エックスが2のとき、ワイは？'}],
+ ['反比例 y=6/x で x=3 のとき y は？',['2','18','3','9'],{say:'はんぴれい。ワイは、エックスぶんの6。エックスが3のとき、ワイは？'}],
+ ['y=2x+3 と y軸の交点は？',['(0, 3)','(3, 0)','(0, 2)','(2, 3)']],
+]},
+
+{id:'m7',name:'確率・データ',qs:[
+ ['コインを1枚なげて表が出る確率は？',['1/2','1/3','1/4','1']],
+ ['さいころで3の倍数が出る確率は？',['1/3','1/6','1/2','2/3']],
+ ['さいころで偶数が出る確率は？',['1/2','1/3','1/6','2/3']],
+ ['さいころ2個で合計が2になる確率は？',['1/36','1/12','1/6','2/36']],
+ ['赤玉2個・白玉3個から1個ひいて赤の確率は？',['2/5','3/5','2/3','1/2']],
+ ['じゃんけん1回で勝つ確率は？',['1/3','1/2','1/4','2/3']],
+ ['トランプ52枚からハートをひく確率は？',['1/4','1/13','1/52','1/2']],
+ ['さいころで6が出ない確率は？',['5/6','1/6','4/6','1/2']],
+ ['データ 3, 5, 8, 9, 11 の中央値は？',['8','7','9','5']],
+ ['データ 2, 4, 6 の平均値は？',['4','3','6','12']],
+ ['データ 1, 2, 2, 3, 5 の最頻値は？',['2','1','3','5']],
+ ['最大値9、最小値3のとき範囲（レンジ）は？',['6','12','3','9']],
+]},
+]},
+
+/* ================= 英語 120問 ================= */
+english:{name:'英語',sub:'耳が100点',color:'#8A6BD6',strong:true,units:[
+
+{id:'e1',name:'たんご① もの・しぜん',qs:[
+ ['「りんご」を英語で？',['apple','orange','banana','grape']],
+ ['「本」を英語で？',['book','pen','desk','bag']],
+ ['「水」を英語で？',['water','milk','juice','fire']],
+ ['「犬」を英語で？',['dog','cat','bird','fish']],
+ ['「ねこ」を英語で？',['cat','dog','rabbit','mouse']],
+ ['「家」を英語で？',['house','room','school','shop']],
+ ['「車」を英語で？',['car','bus','train','bike']],
+ ['「花」を英語で？',['flower','tree','grass','leaf']],
+ ['「山」を英語で？',['mountain','river','sea','lake']],
+ ['「川」を英語で？',['river','mountain','sky','road']],
+ ['「海」を英語で？',['sea','lake','pool','rain']],
+ ['「雨」を英語で？',['rain','snow','cloud','wind']],
+ ['「雪」を英語で？',['snow','rain','ice','cold']],
+ ['「鳥」を英語で？',['bird','fish','dog','bear']],
+ ['「魚」を英語で？',['fish','bird','meat','egg']],
+ ['「木」を英語で？',['tree','flower','wood','forest']],
+]},
+
+{id:'e2',name:'たんご② ひと・生活',qs:[
+ ['「先生」を英語で？',['teacher','student','doctor','driver']],
+ ['「友だち」を英語で？',['friend','family','people','fan']],
+ ['「家族」を英語で？',['family','friend','father','house']],
+ ['「お母さん」を英語で？',['mother','father','sister','aunt']],
+ ['「お父さん」を英語で？',['father','mother','brother','uncle']],
+ ['「兄・弟」を英語で？',['brother','sister','mother','cousin']],
+ ['「学校」を英語で？',['school','station','library','park']],
+ ['「図書館」を英語で？',['library','hospital','museum','store']],
+ ['「駅」を英語で？',['station','airport','street','stop']],
+ ['「病院」を英語で？',['hospital','hotel','office','police']],
+ ['「朝ごはん」を英語で？',['breakfast','lunch','dinner','snack']],
+ ['「昼ごはん」を英語で？',['lunch','breakfast','dinner','dish']],
+ ['「朝」を英語で？',['morning','night','noon','evening']],
+ ['「夜」を英語で？',['night','morning','day','early']],
+ ['「音楽」を英語で？',['music','movie','sport','art']],
+ ['「宿題」を英語で？',['homework','housework','textbook','test']],
+]},
+
+{id:'e3',name:'たんご③ どうし',qs:[
+ ['「走る」を英語で？',['run','walk','jump','fly']],
+ ['「食べる」を英語で？',['eat','drink','cook','buy']],
+ ['「飲む」を英語で？',['drink','eat','wash','pour']],
+ ['「勉強する」を英語で？',['study','play','work','stand']],
+ ['「読む」を英語で？',['read','write','speak','see']],
+ ['「書く」を英語で？',['write','read','draw','type']],
+ ['「話す」を英語で？',['speak','listen','hear','sing']],
+ ['「聞く」を英語で？',['listen','speak','look','say']],
+ ['「歩く」を英語で？',['walk','run','swim','drive']],
+ ['「泳ぐ」を英語で？',['swim','walk','dive','ski']],
+ ['「歌う」を英語で？',['sing','dance','play','shout']],
+ ['「作る」を英語で？',['make','take','give','get']],
+ ['「使う」を英語で？',['use','have','hold','carry']],
+ ['「買う」を英語で？',['buy','sell','pay','shop']],
+ ['「助ける」を英語で？',['help','save','call','ask']],
+ ['「開ける」を英語で？',['open','close','push','pull']],
+ ['「教える」を英語で？',['teach','learn','tell','show']],
+ ['「訪れる」を英語で？',['visit','leave','arrive','stay']],
+]},
+
+{id:'e4',name:'たんご④ ようす',qs:[
+ ['「大きい」を英語で？',['big','small','long','wide']],
+ ['「小さい」を英語で？',['small','big','low','thin']],
+ ['「新しい」を英語で？',['new','old','young','clean']],
+ ['「古い」を英語で？',['old','new','used','late']],
+ ['「うれしい」を英語で？',['happy','sad','angry','tired']],
+ ['「簡単な」を英語で？',['easy','difficult','soft','light']],
+ ['「難しい」を英語で？',['difficult','easy','heavy','dark']],
+ ['「速い」を英語で？',['fast','slow','early','soon']],
+ ['「暑い」を英語で？',['hot','cold','warm','cool']],
+ ['「寒い」を英語で？',['cold','hot','cool','freeze']],
+ ['「若い」を英語で？',['young','old','new','small']],
+ ['「背が高い」を英語で？',['tall','high','long','big']],
+ ['「親切な」を英語で？',['kind','quiet','busy','free']],
+ ['「美しい」を英語で？',['beautiful','colorful','famous','clean']],
+]},
+
+{id:'e5',name:'たんご⑤ 曜日・月・数',qs:[
+ ['「月曜日」を英語で？',['Monday','Sunday','Tuesday','Friday']],
+ ['「日曜日」を英語で？',['Sunday','Saturday','Monday','Friday']],
+ ['「土曜日」を英語で？',['Saturday','Sunday','Thursday','Tuesday']],
+ ['「水曜日」を英語で？',['Wednesday','Monday','Thursday','Tuesday']],
+ ['「3月」を英語で？',['March','May','April','Monday']],
+ ['「8月」を英語で？',['August','April','October','Autumn']],
+ ['「12月」を英語で？',['December','November','October','Sunday']],
+ ['「春」を英語で？',['spring','summer','fall','season']],
+ ['「夏」を英語で？',['summer','spring','winter','hot']],
+ ['「冬」を英語で？',['winter','fall','summer','cold']],
+ ['「12」を英語で？',['twelve','twenty','two','ten']],
+ ['「1番目の」を英語で？',['first','one','best','front']],
+]},
+
+{id:'e6',name:'文法① be動詞・一般動詞',qs:[
+ ['I ___ a student.（私は生徒です）',['am','is','are','be']],
+ ['You ___ kind.（あなたは親切です）',['are','am','is','be']],
+ ['He ___ a teacher.（彼は先生です）',['is','am','are','do']],
+ ['We ___ friends.（私たちは友だちです）',['are','is','am','be']],
+ ['She ___ tennis every day.（彼女は毎日テニスをします）',['plays','play','playing','played']],
+ ['I ___ music.（私は音楽が好きです）',['like','likes','liking','am like']],
+ ['___ you like cats?（あなたはねこが好きですか）',['Do','Does','Are','Is']],
+ ['He ___ not play soccer.（彼はサッカーをしません）',['does','do','is','are']],
+ ['___ this your pen?（これはあなたのペンですか）',['Is','Are','Do','Am']],
+ ['They ___ from Japan.（彼らは日本出身です）',['are','is','am','be']],
+ ['This ___ my bag.（これは私のかばんです）',['is','are','am','do']],
+ ['I ___ not busy.（私は忙しくありません）',['am','do','does','is']],
+ ['My mother ___ English.（母は英語を話します）',['speaks','speak','speaking','is speak']],
+ ['Ken and I ___ students.（ケンと私は生徒です）',['are','is','am','be']],
+]},
+
+{id:'e7',name:'文法② 過去・未来',qs:[
+ ['go の過去形は？',['went','goed','gone','going'],{en:'went'}],
+ ['see の過去形は？',['saw','seed','seen','sawed'],{en:'saw'}],
+ ['have の過去形は？',['had','haved','has','having'],{en:'had'}],
+ ['come の過去形は？',['came','comed','comes','coming'],{en:'came'}],
+ ['eat の過去形は？',['ate','eated','eaten','eating'],{en:'ate'}],
+ ['make の過去形は？',['made','maked','makes','making'],{en:'made'}],
+ ['I ___ TV last night.（昨夜テレビを見ました）',['watched','watch','watching','watches']],
+ ['She ___ English yesterday.（彼女は昨日英語を勉強しました）',['studied','studyed','studies','studying']],
+ ['I ___ going to play tennis.（テニスをするつもりです）',['am','will','do','can']],
+ ['I ___ play tennis tomorrow.（明日テニスをするでしょう）',['will','was','did','am']],
+ ['I ___ swim.（私は泳げます）',['can','will','must','do']],
+ ['I ___ busy yesterday.（私は昨日忙しかった）',['was','were','am','is']],
+ ['They ___ in Tokyo last week.（彼らは先週東京にいました）',['were','was','are','is']],
+ ['I ___ not go to school yesterday.（昨日学校に行きませんでした）',['did','do','was','am']],
+ ['box の複数形は？',['boxes','boxs','boxies','box'],{en:'boxes'}],
+ ['child（子ども）の複数形は？',['children','childs','childes','childrens'],{en:'children'}],
+]},
+
+{id:'e8',name:'文法③ 疑問詞ほか',qs:[
+ ['「何」とたずねるとき：___ is this?',['What','Who','When','Where'],{say:'これはなに？と たずねるとき、さいしょの ことばは？'}],
+ ['「だれ」とたずねるとき：___ is that boy?',['Who','What','Which','How'],{say:'あのおとこのこは だれ？と たずねるとき、さいしょの ことばは？'}],
+ ['「いつ」とたずねるとき：___ is your birthday?',['When','Where','Why','What'],{say:'たんじょうびは いつ？と たずねるとき、さいしょの ことばは？'}],
+ ['「どこ」とたずねるとき：___ do you live?',['Where','When','Who','What'],{say:'どこにすんでいるの？と たずねるとき、さいしょの ことばは？'}],
+ ['「なぜ」とたずねるとき：___ do you like it?',['Why','How','What','When'],{say:'なぜすきなの？と たずねるとき、さいしょの ことばは？'}],
+ ['「どうやって」とたずねるとき：___ do you go to school?',['How','Why','What','Who'],{say:'どうやって がっこうに いくの？と たずねるとき、さいしょの ことばは？'}],
+ ['I am ___ now.（今、遊んでいるところです）',['playing','play','played','plays']],
+ ['There ___ a book on the desk.（机の上に本があります）',['is','are','am','be']],
+ ['「私のもの」を英語で？',['mine','my','me','I'],{en:'mine'}],
+ ['「彼を」を英語で？',['him','he','his','himself'],{en:'him'}],
+ ['tall の最上級（いちばん〜）は？',['tallest','taller','most tall','tallst'],{en:'tallest'}],
+ ['big の比較級（〜より…）は？',['bigger','biggest','more big','biger'],{en:'bigger'}],
+ ['Thank you. と言われたら？',['You\'re welcome.','I\'m sorry.','See you.','Good night.'],{en:'You\'re welcome'}],
+ ['「はじめまして」Nice to ___ you.',['meet','look','watch','listen'],{say:'はじめまして。ナイス トゥ なに ユー？'}],
+]},
+]},
+
+/* ================= 国語 98問 ================= */
+kokugo:{name:'国語',sub:'漢字マスター',color:'#C9683E',strong:true,units:[
+
+{id:'k1',name:'漢字よみ①',qs:[
+ ['「困難」の読みは？',['こんなん','こんばん','くなん','こんもん'],{plain:1}],
+ ['「否定」の読みは？',['ひてい','ふてい','いなてい','ひじょう'],{plain:1}],
+ ['「発揮」の読みは？',['はっき','はつゆう','はっこう','はつき'],{plain:1}],
+ ['「快適」の読みは？',['かいてき','けってき','かいそく','こころてき'],{plain:1}],
+ ['「専門」の読みは？',['せんもん','せんぱい','ぜんもん','せもん'],{plain:1}],
+ ['「油断」の読みは？',['ゆだん','あぶだん','ゆうだん','あぶらだん'],{plain:1}],
+ ['「経験」の読みは？',['けいけん','きょうけん','けいげん','けんけい'],{plain:1}],
+ ['「貴重」の読みは？',['きちょう','きじゅう','たかちょう','きおも'],{plain:1}],
+ ['「尊敬」の読みは？',['そんけい','そんきょう','とうとけい','たっとび'],{plain:1}],
+ ['「簡単」の読みは？',['かんたん','けんたん','かんだん','きんたん'],{plain:1}],
+ ['「複雑」の読みは？',['ふくざつ','ふくさつ','ふうざつ','ふくずつ'],{plain:1}],
+ ['「迷惑」の読みは？',['めいわく','まよわく','めわく','めいこく'],{plain:1}],
+ ['「慎重」の読みは？',['しんちょう','しんじゅう','じんちょう','まことちょう'],{plain:1}],
+ ['「誠実」の読みは？',['せいじつ','じょうじつ','せいみ','まことみ'],{plain:1}],
+ ['「輸入」の読みは？',['ゆにゅう','しゅにゅう','ゆうにゅう','わにゅう'],{plain:1}],
+ ['「往復」の読みは？',['おうふく','おうぶく','いきふく','じゅうふく'],{plain:1}],
+]},
+
+{id:'k2',name:'漢字よみ② 訓読み',qs:[
+ ['「暖かい」の読みは？',['あたたかい','あたかい','だんかい','ぬくかい'],{plain:1}],
+ ['「補う」の読みは？',['おぎなう','ほう','やしなう','ともなう'],{plain:1}],
+ ['「快い」の読みは？',['こころよい','かいい','はやい','きもちい'],{plain:1}],
+ ['「営む」の読みは？',['いとなむ','えいむ','はげむ','このむ'],{plain:1}],
+ ['「険しい」の読みは？',['けわしい','けんしい','きびしい','あやしい'],{plain:1}],
+ ['「志す」の読みは？',['こころざす','しす','めざす','くわだす'],{plain:1}],
+ ['「率いる」の読みは？',['ひきいる','そついる','りついる','もちいる'],{plain:1}],
+ ['「育む」の読みは？',['はぐくむ','いくむ','そだむ','うむ'],{plain:1}],
+ ['「唱える」の読みは？',['となえる','しょうえる','うたえる','かなえる'],{plain:1}],
+ ['「損なう」の読みは？',['そこなう','そんなう','うしなう','おこなう'],{plain:1}],
+ ['「幼い」の読みは？',['おさない','ようい','ちいさい','あどけない'],{plain:1}],
+ ['「招く」の読みは？',['まねく','しょうく','いだく','むく'],{plain:1}],
+ ['「訪れる」の読みは？',['おとずれる','ほうれる','たずれる','あらわれる'],{plain:1}],
+ ['「逆らう」の読みは？',['さからう','ぎゃくらう','あらがらう','くちごたう'],{plain:1}],
+]},
+
+{id:'k3',name:'漢字かき',qs:[
+ ['「ぞうか」（数がふえること）を漢字で？',['増加','増化','蔵加','象加']],
+ ['「かんたん」を漢字で？',['簡単','間単','簡短','完単']],
+ ['「せつやく」を漢字で？',['節約','説約','節薬','切約']],
+ ['「さんせい」を漢字で？',['賛成','参成','賛政','算成']],
+ ['「しょうたい」（客をまねく）を漢字で？',['招待','紹待','招対','昭待']],
+ ['「せきにん」を漢字で？',['責任','積任','責認','績任']],
+ ['「こうか」（ききめ）を漢字で？',['効果','功果','効課','校果']],
+ ['「かくにん」を漢字で？',['確認','格認','確任','客認']],
+ ['「いがい」（〜のほか）を漢字で？',['以外','意外','以内','已外']],
+ ['「いがい」（おどろくこと）を漢字で？',['意外','以外','異外','委外']],
+ ['「きかい」（チャンス）を漢字で？',['機会','機械','器械','気会']],
+ ['「てきせつ」を漢字で？',['適切','敵切','適説','摘切']],
+ ['「しゅうかん」（ならわし）を漢字で？',['習慣','週間','習間','週刊']],
+ ['「けんこう」を漢字で？',['健康','建康','健構','検康']],
+]},
+
+{id:'k4',name:'対義語・類義語',qs:[
+ ['「原因」の対義語は？',['結果','理由','失敗','原理']],
+ ['「賛成」の対義語は？',['反対','同意','中立','否認']],
+ ['「需要」の対義語は？',['供給','必要','消費','販売']],
+ ['「生産」の対義語は？',['消費','製造','販売','貯金']],
+ ['「抽象」の対義語は？',['具体','現実','写実','実験']],
+ ['「権利」の対義語は？',['義務','自由','責任','命令']],
+ ['「積極的」の対義語は？',['消極的','悲観的','客観的','受動的']],
+ ['「安全」の対義語は？',['危険','注意','事故','不安']],
+ ['「理想」の対義語は？',['現実','空想','夢','希望']],
+ ['「拡大」の対義語は？',['縮小','減少','短縮','細分']],
+ ['「突然」と意味が近いのは？',['急に','ゆっくり','たまに','ずっと']],
+ ['「方法」と意味が近いのは？',['手段','目的','結果','理由']],
+ ['「進歩」と意味が近いのは？',['向上','後退','停止','変化']],
+ ['「著名」と意味が近いのは？',['有名','無名','匿名','記名']],
+]},
+
+{id:'k5',name:'ことわざ・慣用句',qs:[
+ ['「ちりも積もれば◯となる」',['山','川','海','空'],{say:'ちりもつもれば、なにとなる？'}],
+ ['「石の上にも三年」の意味は？',['しんぼう強く続ければ成功する','石はつめたい','三年たてば忘れる','じっとしてはいけない']],
+ ['「猿も木から落ちる」の意味は？',['名人でも失敗することがある','猿は木がにがて','油断すると危ない','高い所はあぶない']],
+ ['「馬の耳に念仏」の意味は？',['言っても効き目がない','馬は耳がいい','ありがたい話','うるさくてきこえない']],
+ ['「棚からぼたもち」の意味は？',['思いがけない幸運','かたづけが大事','あまいものは別腹','高い所の物は取れない']],
+ ['「二階から目薬」の意味は？',['思うようにならずもどかしい','よく見えること','高い所がすき','目にいい薬']],
+ ['「頭を冷やす」の意味は？',['落ち着く','ねつを下げる','わすれる','あきらめる']],
+ ['「手を貸す」の意味は？',['手伝う','にぎる','さわる','貸し出す']],
+ ['「顔が広い」の意味は？',['知り合いが多い','顔が大きい','有名になる','明るい性格']],
+ ['「口が堅い」の意味は？',['秘密をもらさない','無口である','がんこである','歯が強い']],
+ ['「目がない」の意味は？',['大好きでたまらない','見えない','ねむい','見る気がない']],
+ ['「足を洗う」の意味は？',['悪いことをやめる','おふろに入る','歩きつかれる','旅に出る']],
+ ['「猫の手も借りたい」の意味は？',['とても忙しい','猫がすき','人手が多い','ひまである']],
+ ['「油を売る」の意味は？',['むだ話をしてなまける','商売がうまい','よく働く','料理をする']],
+]},
+
+{id:'k6',name:'四字熟語',qs:[
+ ['一度に二つの利益を得ることは？',['一石二鳥','二人三脚','一日千秋','三寒四温']],
+ ['人それぞれ好みや考えがちがうことは？',['十人十色','一長一短','百発百中','四苦八苦'],{say:'ひとそれぞれ このみや かんがえが ちがうことを、よじじゅくごで？'}],
+ ['言葉にしなくても心が通じ合うことは？',['以心伝心','異口同音','電光石火','半信半疑']],
+ ['前置きなしにいきなり本題に入ることは？',['単刀直入','一刀両断','直立不動','短期決戦']],
+ ['自分で自分をほめることは？',['自画自賛','自問自答','自業自得','自由自在']],
+ ['大人物は遅れて頭角を現すことは？',['大器晩成','大同小異','器用貧乏','晩節不覚']],
+ ['昔のことを学んで新しい知恵を得ることは？',['温故知新','古今東西','新陳代謝','旧態依然']],
+ ['文章の組み立てを表す四字熟語は？',['起承転結','喜怒哀楽','春夏秋冬','東西南北']],
+ ['たいへん苦労することは？',['四苦八苦','右往左往','五里霧中','一件落着'],{say:'たいへん くろうすることを、よじじゅくごで？'}],
+ ['その場に応じてうまく対応することは？',['臨機応変','適材適所','試行錯誤','優柔不断'],{say:'そのばに おうじて うまく たいおうすることを、よじじゅくごで？'}],
+ ['とても待ち遠しいことは？',['一日千秋','一朝一夕','一長一短','千載一遇']],
+ ['半分信じて半分疑うことは？',['半信半疑','疑心暗鬼','信賞必罰','一喜一憂']],
+]},
+
+{id:'k7',name:'文法・古文',qs:[
+ ['「走る」の品詞は？',['動詞','名詞','形容詞','副詞']],
+ ['「美しい」の品詞は？',['形容詞','形容動詞','動詞','副詞']],
+ ['「静かだ」の品詞は？',['形容動詞','形容詞','動詞','助詞']],
+ ['「ゆっくり」の品詞は？',['副詞','形容詞','動詞','接続詞']],
+ ['「犬が走る」の主語は？',['犬が','走る','犬','が']],
+ ['古語「いと」の意味は？',['とても','少し','いつも','まったく…ない']],
+ ['古語「をかし」の意味は？',['趣がある・すばらしい','おかしい・変だ','おそろしい','つまらない']],
+ ['古語「うつくし」の意味は？',['かわいらしい','美しい景色','りっぱだ','きよらかだ']],
+ ['古語「つとめて」の意味は？',['早朝','努力して','つとめ先','夜おそく']],
+ ['古語「ありがたし」の意味は？',['めったにない','感謝している','ありえない','うれしい']],
+ ['歴史的かなづかい「けふ」の読みは？',['きょう','けふ','けう','きふ']],
+ ['歴史的かなづかい「ゐる」の読みは？',['いる','ゐる','うる','える']],
+ ['古語「あはれ」の意味は？',['しみじみとした趣','かわいそう','あきれた','楽しい']],
+ ['古語「やうやう」の読みは？',['ようよう','やうやう','やんやん','ゆうゆう']],
+]},
+]},
+
+/* ================= 理科 90問 ================= */
+science:{name:'理科',sub:'化学が得点源',color:'#3AA76D',strong:true,units:[
+
+{id:'r1',name:'元素記号（とくい！）',qs:[
+ ['水素の元素記号は？',['H','He','O','N']],
+ ['酸素の元素記号は？',['O','C','Ca','Na']],
+ ['炭素の元素記号は？',['C','Cu','Cl','Ca']],
+ ['窒素の元素記号は？',['N','Ne','Na','Ni'],{say:'ちっその げんそきごうは？'}],
+ ['ナトリウムの元素記号は？',['Na','N','Ni','Mg']],
+ ['鉄の元素記号は？',['Fe','F','Al','Zn']],
+ ['銅の元素記号は？',['Cu','Ca','Co','Cr']],
+ ['マグネシウムの元素記号は？',['Mg','Mn','Ma','Al']],
+ ['亜鉛の元素記号は？',['Zn','Al','Ag','Z'],{say:'あえんの げんそきごうは？'}],
+ ['銀の元素記号は？',['Ag','Au','Si','Gi']],
+ ['金の元素記号は？',['Au','Ag','Al','Go']],
+ ['カルシウムの元素記号は？',['Ca','C','Cl','K']],
+ ['塩素の元素記号は？',['Cl','Ca','C','S']],
+ ['硫黄の元素記号は？',['S','I','Su','Fe'],{say:'いおうの げんそきごうは？'}],
+ ['カリウムの元素記号は？',['K','Ka','Ca','P']],
+ ['「Fe」は何の元素記号？',['鉄','銅','金','フッ素'],{say:'エフ、イーは、なんの げんそきごう？'}],
+]},
+
+{id:'r2',name:'化学式・化学変化',qs:[
+ ['水の化学式は？',['H₂O','CO₂','O₂','NaCl'],{say:'みずの かがくしきは？'}],
+ ['二酸化炭素の化学式は？',['CO₂','H₂O','CO','O₂'],{say:'にさんかたんその かがくしきは？'}],
+ ['酸素の化学式は？',['O₂','O','CO₂','H₂'],{say:'さんその かがくしきは？'}],
+ ['食塩（塩化ナトリウム）の化学式は？',['NaCl','NaOH','HCl','CaCl'],{say:'しょくえんの かがくしきは？'}],
+ ['水素の化学式は？',['H₂','H','H₂O','He'],{say:'すいその かがくしきは？'}],
+ ['石灰水を白くにごらせる気体は？',['二酸化炭素','酸素','水素','窒素']],
+ ['ものを燃やすはたらきのある気体は？',['酸素','水素','窒素','二酸化炭素']],
+ ['火を近づけるとポンと音を立てて燃える気体は？',['水素','酸素','窒素','アンモニア']],
+ ['刺激臭があり上方置換で集める気体は？',['アンモニア','水素','酸素','二酸化炭素']],
+ ['水を電気分解すると出る気体は？',['水素と酸素','水素と窒素','酸素だけ','二酸化炭素と酸素']],
+ ['物質が酸素と結びつく変化を何という？',['酸化','還元','中和','分解']],
+ ['化学変化の前後で全体の質量は？',['変わらない','増える','減る','半分になる']],
+ ['鉄と硫黄が結びつくとできる物質は？',['硫化鉄','酸化鉄','塩化鉄','炭化鉄'],{say:'てつと いおうが むすびつくと できるぶっしつは？'}],
+ ['スチールウールを燃やすと質量は？',['増える','減る','変わらない','ゼロになる']],
+ ['水素と酸素が反応してできる物質は？',['水','過酸化水素','塩酸','アンモニア']],
+ ['1種類の物質が2種類以上に分かれる化学変化は？',['分解','化合','酸化','蒸発']],
+]},
+
+{id:'r3',name:'水溶液・イオン',qs:[
+ ['酸性の水溶液は青色リトマス紙を？',['赤色に変える','青色のまま','緑色に変える','白くする']],
+ ['アルカリ性でフェノールフタレイン液は？',['赤色になる','無色のまま','青色になる','黄色になる']],
+ ['BTB液は酸性で何色？',['黄色','緑色','青色','赤色']],
+ ['BTB液は中性で何色？',['緑色','黄色','青色','むらさき色']],
+ ['pH7 の水溶液の性質は？',['中性','酸性','アルカリ性','強酸性'],{say:'ピーエイチ7の すいようえきの せいしつは？'}],
+ ['酸とアルカリを混ぜると起こる反応は？',['中和','酸化','分解','燃焼']],
+ ['中和でできるのは水と何？',['塩','気体','金属','砂糖'],{say:'ちゅうわで できるのは、みずと なに？'}],
+ ['塩酸の溶質は？',['塩化水素','食塩','水素','塩素']],
+ ['食塩水の溶媒は？',['水','食塩','ナトリウム','塩素']],
+ ['水にとかすと電流が流れる物質を何という？',['電解質','非電解質','導体','磁性体']],
+ ['砂糖水に電流は？',['流れない','よく流れる','少しだけ流れる','熱いと流れる']],
+ ['限界までとかした水溶液を何という？',['飽和水溶液','濃縮水溶液','混合水溶液','過熱水溶液']],
+]},
+
+{id:'r4',name:'生物',qs:[
+ ['植物が光を受けて養分をつくるはたらきは？',['光合成','呼吸','蒸散','消化']],
+ ['光合成が行われる緑色の粒は？',['葉緑体','気孔','細胞壁','核']],
+ ['葉から水蒸気が出ていくはたらきは？',['蒸散','蒸発','呼吸','放出']],
+ ['根から吸った水の通り道は？',['道管','師管','気孔','血管']],
+ ['葉でつくられた養分の通り道は？',['師管','道管','気管','リンパ管']],
+ ['だ液にふくまれデンプンを分解する消化酵素は？',['アミラーゼ','ペプシン','リパーゼ','インスリン']],
+ ['胃液にふくまれる消化酵素は？',['ペプシン','アミラーゼ','リパーゼ','トリプシン']],
+ ['小腸のかべにある養分を吸収する突起は？',['柔毛','繊毛','気孔','じん毛'],{say:'しょうちょうの かべにある、ようぶんを きゅうしゅうする とっきは？'}],
+ ['血液中で酸素を運ぶのは？',['赤血球','白血球','血小板','血しょう']],
+ ['体に入った細菌とたたかうのは？',['白血球','赤血球','血小板','血しょう']],
+ ['肺にある小さなふくろを何という？',['肺胞','気胞','肺門','横隔膜']],
+ ['熱いものにふれて思わず手を引っこめる反応は？',['反射','判断','感覚','運動'],{say:'あついものに ふれて おもわず てを ひっこめる はんのうは？'}],
+ ['食べる・食べられるの生物のつながりは？',['食物連鎖','弱肉強食','生存競争','共生']],
+ ['親から子へ形質を伝えるものは？',['遺伝子','細胞膜','酵素','ホルモン']],
+ ['遺伝子の本体である物質は？',['DNA','ATP','RNA','タンパク質'],{say:'いでんしの ほんたいである ぶっしつは？'}],
+ ['ヒトの心臓のつくりは？',['2心房2心室','1心房1心室','2心房1心室','1心房2心室']],
+ ['生物が酸素を取り入れ養分を分解するはたらきは？',['呼吸','光合成','蒸散','発酵']],
+ ['めしべの先に花粉がつくことを何という？',['受粉','受精','開花','発芽']],
+]},
+
+{id:'r5',name:'地学',qs:[
+ ['地震のはじめの小さなゆれを何という？',['初期微動','主要動','余震','縦ゆれ']],
+ ['初期微動を伝える波は？',['P波','S波','電磁波','津波'],{say:'しょきびどうを つたえる なみは？'}],
+ ['地震の規模（エネルギー）を表すのは？',['マグニチュード','震度','ガル','ヘクトパスカル']],
+ ['ある地点でのゆれの大きさを表すのは？',['震度','マグニチュード','震源','震央']],
+ ['マグマが冷え固まってできた岩石は？',['火成岩','堆積岩','石灰岩','変成岩']],
+ ['地層に残された大昔の生物の跡は？',['化石','鉱石','結晶','宝石']],
+ ['地層の時代を知る手がかりになる化石は？',['示準化石','示相化石','生痕化石','人工化石']],
+ ['水蒸気が水滴に変わり始める温度は？',['露点','沸点','融点','氷点']],
+ ['寒冷前線が通過すると気温は？',['下がる','上がる','変わらない','ゼロになる']],
+ ['高気圧の中心付近の天気は？',['晴れが多い','雨が多い','雪が多い','台風になる']],
+ ['日本の上空を西から東へふく風は？',['偏西風','季節風','貿易風','台風'],{say:'にほんの じょうくうを にしから ひがしへ ふくかぜは？'}],
+ ['太陽が東から西へ動いて見える理由は？',['地球の自転','地球の公転','太陽の自転','月の公転']],
+ ['季節によって見える星座が変わる理由は？',['地球の公転','地球の自転','星の移動','月の満ち欠け']],
+ ['明け方の東の空に見える金星を何という？',['明けの明星','よいの明星','北極星','ハレー彗星']],
+]},
+
+{id:'r6',name:'物理',qs:[
+ ['オームの法則を表す式は？',['電圧＝抵抗×電流','電圧＝抵抗÷電流','電流＝電圧×抵抗','抵抗＝電流×電圧']],
+ ['電力の単位は？',['W（ワット）','V（ボルト）','A（アンペア）','J（ジュール）']],
+ ['電流の単位は？',['A（アンペア）','V（ボルト）','W（ワット）','Ω（オーム）']],
+ ['電圧の単位は？',['V（ボルト）','A（アンペア）','N（ニュートン）','Hz（ヘルツ）']],
+ ['直列回路で、どこも同じなのは？',['電流','電圧','抵抗','電力']],
+ ['並列回路で、どの部分も同じなのは？',['電圧','電流','抵抗','電気量']],
+ ['力の大きさの単位は？',['N（ニュートン）','kg','Pa','J']],
+ ['圧力を求める式は？',['力÷面積','力×面積','面積÷力','力＋面積']],
+ ['ばねののびは力の大きさに比例する。これは？',['フックの法則','オームの法則','慣性の法則','パスカルの原理']],
+ ['音の高さを決めるのは？',['振動数','振幅','音色','速さ']],
+ ['光が水中に入るとき折れ曲がる現象は？',['屈折','反射','直進','分散']],
+ ['物体が動き続けよう・止まり続けようとする性質は？',['慣性','弾性','磁性','重力']],
+ ['仕事（J）＝力（N）× 何？',['力の向きに動いた距離','時間','速さ','面積'],{say:'しごとは、ちからと、なにの かけざん？'}],
+ ['高いところにある物体がもつエネルギーは？',['位置エネルギー','運動エネルギー','熱エネルギー','電気エネルギー']],
+]},
+]},
+
+/* ================= 社会 88問 ================= */
+social:{name:'社会',sub:'一問一答でためる',color:'#E08A2E',strong:false,units:[
+
+{id:'s1',name:'歴史① 古代〜中世',qs:[
+ ['邪馬台国の女王は？',['卑弥呼','推古天皇','持統天皇','紫式部'],{say:'やまたいこくの じょおうは？'}],
+ ['十七条の憲法を定めたのは？',['聖徳太子','中大兄皇子','聖武天皇','桓武天皇']],
+ ['大化の改新の中心人物は？',['中大兄皇子','聖徳太子','藤原道長','源頼朝'],{say:'たいかのかいしんの ちゅうしんじんぶつは？'}],
+ ['奈良の大仏をつくらせた天皇は？',['聖武天皇','桓武天皇','推古天皇','天武天皇']],
+ ['794年に平安京へ都を移したのは？',['桓武天皇','聖武天皇','聖徳太子','藤原道長']],
+ ['摂関政治の全盛期の人物は？',['藤原道長','平清盛','菅原道真','藤原鎌足']],
+ ['鎌倉幕府を開いたのは？',['源頼朝','源義経','平清盛','足利尊氏']],
+ ['元寇のときの鎌倉幕府の執権は？',['北条時宗','北条政子','足利義満','源実朝'],{say:'げんこうのときの かまくらばくふの しっけんは？'}],
+ ['金閣を建てたのは？',['足利義満','足利義政','足利尊氏','織田信長']],
+ ['応仁の乱のあとに始まった時代は？',['戦国時代','鎌倉時代','江戸時代','平安時代']],
+ ['1543年に種子島に伝わったのは？',['鉄砲','キリスト教','活版印刷','じゃがいも']],
+ ['1549年にキリスト教を伝えたのは？',['ザビエル','ペリー','コロンブス','シーボルト']],
+ ['日宋貿易を行った平氏の中心人物は？',['平清盛','平将門','平敦盛','平忠盛']],
+ ['縄文時代の人々が使った土器は？',['縄文土器','弥生土器','須恵器','土師器']],
+ ['米づくりが本格的に広まった時代は？',['弥生時代','縄文時代','古墳時代','旧石器時代']],
+]},
+
+{id:'s2',name:'歴史② 近世',qs:[
+ ['楽市・楽座を行ったのは？',['織田信長','豊臣秀吉','徳川家康','武田信玄']],
+ ['太閤検地・刀狩を行ったのは？',['豊臣秀吉','織田信長','徳川家康','石田三成'],{say:'たいこうけんちと かたながりを おこなったのは？'}],
+ ['1600年におきた天下分け目の戦いは？',['関ヶ原の戦い','桶狭間の戦い','長篠の戦い','壇ノ浦の戦い']],
+ ['江戸幕府を開いたのは？',['徳川家康','徳川家光','徳川慶喜','豊臣秀吉']],
+ ['参勤交代を制度化した将軍は？',['徳川家光','徳川家康','徳川綱吉','徳川吉宗']],
+ ['鎖国中も長崎で貿易できたヨーロッパの国は？',['オランダ','ポルトガル','スペイン','イギリス']],
+ ['1853年に黒船で来航したのは？',['ペリー','ザビエル','ハリス','マッカーサー']],
+ ['大政奉還を行った15代将軍は？',['徳川慶喜','徳川家茂','徳川家康','徳川吉宗'],{say:'たいせいほうかんを おこなった 15だいしょうぐんは？'}],
+ ['明治維新が始まったのはおよそ何年？',['1868年','1600年','1789年','1912年']],
+ ['藩を廃止して県を置いた改革は？',['廃藩置県','版籍奉還','地租改正','殖産興業']],
+ ['1889年に発布された憲法は？',['大日本帝国憲法','日本国憲法','十七条の憲法','武家諸法度']],
+ ['初代内閣総理大臣は？',['伊藤博文','大久保利通','西郷隆盛','板垣退助']],
+ ['1894年に始まった戦争は？',['日清戦争','日露戦争','第一次世界大戦','西南戦争']],
+ ['1904年に始まった戦争は？',['日露戦争','日清戦争','太平洋戦争','日中戦争']],
+]},
+
+{id:'s3',name:'歴史③ 近現代',qs:[
+ ['1914年に始まった戦争は？',['第一次世界大戦','第二次世界大戦','日露戦争','太平洋戦争']],
+ ['1929年にアメリカから始まった不況は？',['世界恐慌','石油危機','バブル崩壊','金融恐慌']],
+ ['1931年、日本軍が中国東北部でおこした事件は？',['満州事変','日中戦争','義和団事件','二・二六事件'],{say:'1931ねん、にほんぐんが ちゅうごくとうほくぶで おこした じけんは？'}],
+ ['1941年、真珠湾攻撃で始まった戦争は？',['太平洋戦争','日中戦争','第一次世界大戦','朝鮮戦争']],
+ ['1945年8月6日に原爆が落とされた都市は？',['広島','長崎','東京','沖縄']],
+ ['太平洋戦争が終わったのは？',['1945年','1941年','1951年','1939年']],
+ ['日本国憲法が施行されたのは？',['1947年5月3日','1946年11月3日','1945年8月15日','1950年1月1日']],
+ ['1951年に結ばれた講和条約は？',['サンフランシスコ平和条約','ポーツマス条約','ベルサイユ条約','日米和親条約']],
+ ['1956年に日本が加盟した国際組織は？',['国際連合','国際連盟','EU','NATO'],{say:'1956ねんに にほんが かめいした こくさいそしきは？'}],
+ ['1964年にアジアで初めて開かれた大会は？',['東京オリンピック','大阪万博','札幌オリンピック','長野オリンピック']],
+ ['1950年代半ば〜70年代初めの急成長を何という？',['高度経済成長','バブル経済','産業革命','列島改造']],
+ ['1972年に日本に復帰したのは？',['沖縄','北方領土','小笠原','台湾']],
+]},
+
+{id:'s4',name:'地理① 日本',qs:[
+ ['兵庫県の県庁所在地は？',['神戸市','姫路市','明石市','西宮市']],
+ ['北海道の道庁所在地は？',['札幌市','函館市','旭川市','小樽市']],
+ ['愛知県の県庁所在地は？',['名古屋市','豊田市','岡崎市','愛知市']],
+ ['沖縄県の県庁所在地は？',['那覇市','沖縄市','石垣市','宜野湾市'],{say:'おきなわけんの けんちょうしょざいちは？'}],
+ ['宮城県の県庁所在地は？',['仙台市','宮城市','石巻市','盛岡市']],
+ ['日本最大の湖は？',['琵琶湖','霞ヶ浦','猪苗代湖','摩周湖'],{say:'にほんさいだいの みずうみは？'}],
+ ['日本一長い川は？',['信濃川','利根川','石狩川','淀川']],
+ ['日本一高い山は？',['富士山','北岳','槍ヶ岳','白山']],
+ ['大阪湾岸に広がる工業地帯は？',['阪神工業地帯','中京工業地帯','京浜工業地帯','北九州工業地域']],
+ ['中京工業地帯で自動車生産がさかんな都市は？',['豊田市','名古屋市','四日市市','浜松市']],
+ ['宮崎県や高知県でさかんな、野菜の早づくりは？',['促成栽培','抑制栽培','近郊農業','二毛作'],{say:'みやざきけんや こうちけんで さかんな、やさいの はやづくりは？'}],
+ ['長野県の高原でさかんな、出荷を遅らせる栽培は？',['抑制栽培','促成栽培','施設園芸','混合農業']],
+ ['三陸海岸に見られる入り組んだ海岸地形は？',['リアス海岸','砂丘','カルデラ','三角州']],
+ ['「日本の屋根」とよばれる山々は？',['日本アルプス','奥羽山脈','紀伊山地','中国山地']],
+ ['大都市の近くで野菜をつくる農業は？',['近郊農業','促成栽培','酪農','焼畑農業']],
+]},
+
+{id:'s5',name:'地理② 世界',qs:[
+ ['世界一長い川は？',['ナイル川','アマゾン川','長江','ミシシッピ川']],
+ ['世界一面積が大きい国は？',['ロシア','カナダ','中国','アメリカ']],
+ ['世界一人口が多い国（2023年〜）は？',['インド','中国','アメリカ','インドネシア']],
+ ['世界一大きい海洋は？',['太平洋','大西洋','インド洋','北極海']],
+ ['緯度0度の線を何という？',['赤道','本初子午線','日付変更線','北回帰線']],
+ ['本初子午線が通る国は？',['イギリス','フランス','アメリカ','日本']],
+ ['経度15度ごとに生じる時差は？',['1時間','30分','2時間','15分']],
+ ['六大陸でいちばん大きい大陸は？',['ユーラシア大陸','アフリカ大陸','北アメリカ大陸','南極大陸']],
+ ['日本が属する造山帯は？',['環太平洋造山帯','アルプス・ヒマラヤ造山帯','ウラル造山帯','古期造山帯'],{say:'にほんが ぞくする ぞうざんたいは？'}],
+ ['ヨーロッパの国々がつくる連合は？',['EU','ASEAN','NATO','国連'],{say:'ヨーロッパの くにぐにが つくる れんごうは？'}],
+ ['東南アジアの国々がつくる組織は？',['ASEAN','EU','OPEC','APEC'],{say:'とうなんアジアの くにぐにが つくる そしきは？'}],
+ ['アメリカ農業で、環境に合った作物をつくることは？',['適地適作','大量生産','二期作','焼畑'],{say:'アメリカのうぎょうの とくちょうで、かんきょうに あった さくもつを つくることは？'}],
+ ['オーストラリアの主な輸出資源は？',['鉄鉱石・石炭','石油・天然ガス','ダイヤモンド','コーヒー豆']],
+ ['一年中暑く雨の多い気候は？',['熱帯雨林気候','砂漠気候','ツンドラ気候','地中海性気候']],
+]},
+
+{id:'s6',name:'公民',qs:[
+ ['日本国憲法の三原則：国民主権・平和主義とあと一つは？',['基本的人権の尊重','三権分立','法の下の平等','天皇主権']],
+ ['三権分立の三つの権力は？',['立法・行政・司法','政治・経済・文化','国・県・市','内閣・省庁・裁判所']],
+ ['立法権をもつのは？',['国会','内閣','裁判所','天皇']],
+ ['行政権をもつのは？',['内閣','国会','裁判所','警察']],
+ ['司法権をもつのは？',['裁判所','国会','内閣','検察']],
+ ['選挙権は何歳から？',['18歳','20歳','16歳','25歳']],
+ ['日本の国会は何院制？',['二院制','一院制','三院制','四院制']],
+ ['予算の議決などで強い権限をもつのは？',['衆議院','参議院','最高裁','内閣府']],
+ ['同じ事件で3回まで裁判を受けられる制度は？',['三審制','三権分立','二院制','国民審査']],
+ ['法律が憲法に違反しないか審査する権限は？',['違憲審査権','弾劾裁判権','国政調査権','解散権']],
+ ['日本国憲法で天皇は日本国の何とされる？',['象徴','元首','主権者','代表']],
+ ['憲法改正の最終決定は何で行う？',['国民投票','閣議決定','衆議院の議決','天皇の裁可']],
+ ['需要が供給より多いとき価格は？',['上がる','下がる','変わらない','ゼロになる']],
+ ['1ドル=100円が150円になることを何という？',['円安','円高','デフレ','インフレ'],{say:'1ドル100えんが、150えんに なることを なんという？'}],
+ ['消費税はどんな税？',['間接税','直接税','地方税だけ','所得税の一種']],
+ ['日本の中央銀行は？',['日本銀行','財務省','みずほ銀行','造幣局']],
+ ['労働三権に含まれるのは？',['団結権','黙秘権','拒否権','請願権']],
+ ['地域のことを住民自身が決める仕組みは？',['地方自治','中央集権','三権分立','直接税制']],
+]},
+]},
+};
+
+/* ============ みみずく アプリ本体 ============ */
+
+/* ---------- ふくろうアート ---------- */
+function owlSVG(cls){return `<svg class="owl ${cls||''}" viewBox="0 0 120 120" width="100%" height="100%" aria-hidden="true">
+  <ellipse cx="60" cy="108" rx="30" ry="6" fill="rgba(0,0,0,.10)"/>
+  <path d="M28 34 L22 14 L44 28 Z" fill="var(--primary-deep)"/>
+  <path d="M92 34 L98 14 L76 28 Z" fill="var(--primary-deep)"/>
+  <path d="M60 20 C30 20 20 44 20 66 C20 92 38 106 60 106 C82 106 100 92 100 66 C100 44 90 20 60 20 Z" fill="var(--primary)"/>
+  <path d="M60 44 C44 44 34 56 34 72 C34 90 46 100 60 100 C74 100 86 90 86 72 C86 56 76 44 60 44 Z" fill="var(--tint)"/>
+  <g class="eyes">
+    <g class="eyeopen">
+      <circle cx="47" cy="62" r="13" fill="#fff"/><circle cx="73" cy="62" r="13" fill="#fff"/>
+      <circle cx="49" cy="63" r="6.2" fill="var(--ink)"/><circle cx="71" cy="63" r="6.2" fill="var(--ink)"/>
+      <circle cx="51" cy="61" r="2" fill="#fff"/><circle cx="73" cy="61" r="2" fill="#fff"/>
+    </g>
+    <g class="eyehappy" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" fill="none">
+      <path d="M40 64 q7 -9 14 0"/><path d="M66 64 q7 -9 14 0"/>
+    </g>
+  </g>
+  <path d="M60 68 l-6 7 h12 z" fill="var(--gold)"/>
+  <path d="M14 60 a10 10 0 00-2 8" stroke="var(--primary-deep)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M106 60 a10 10 0 012 8" stroke="var(--primary-deep)" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>`}
+document.getElementById('brand-owl').innerHTML=owlSVG('mini');
+document.querySelector('.owlwrap').innerHTML=owlSVG('bigowl');
+document.querySelector('.miniowl').innerHTML=owlSVG('mini');
+document.querySelector('.done-owl').innerHTML=owlSVG('bigowl');
+
+/* ---------- バンク展開 ---------- */
+const SUBJ_ORDER=['science','math','kokugo','english','social'];
+const ALLQ=[];           // {qid,subj,unit,unitName,q,c,opt}
+for(const sid of SUBJ_ORDER){
+  BANK[sid].units.forEach(u=>{
+    u.qs.forEach((t,i)=>{
+      ALLQ.push({qid:u.id+'_'+i,subj:sid,unit:u.id,unitName:u.name,q:t[0],c:t[1],opt:t[2]||{}});
+    });
+  });
+}
+const TOTAL=ALLQ.length;
+
+/* ---------- ことば ---------- */
+const GOOD=['せいかい！','やった、あってる！','さすが♪','ナイス！','その調子！','ばっちり！','天才かも！'];
+const SOFT=['おしい！つぎいこ♪','だいじょうぶ、覚えればOK','ここ、いっしょに覚えよ','ナイスチャレンジ！','まちがえた分だけ伸びるよ♪'];
+const DONEMSG=['よくがんばったね。ちゃんと前に進んでるよ。','耳がどんどん賢くなってる♪','この積み重ねが、合格につながるよ。','きょうの分、えらい！また明日も待ってるね。','できた数が、自信になるよ。'];
+
+/* ---------- 保存 ---------- */
+const KEY='mimizuku_v3';
+let S=load();
+function load(){
+  try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.done)return r;}catch(e){}
+  let base={points:0,streak:0,last:'',audio:true,done:{},wrong:{}};
+  try{const old=JSON.parse(localStorage.getItem('mimizuku_v2'));
+    if(old){base.points=old.points||0;base.streak=old.streak||0;base.last=old.last||'';base.audio=old.audio!==false;}}catch(e){}
+  return base;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function levelOf(p){return Math.floor(p/100)+1;}
+function doneCount(subj){let n=0;for(const q of ALLQ)if(q.subj===subj&&S.done[q.qid])n++;return n;}
+function wrongList(subj){return ALLQ.filter(q=>S.wrong[q.qid]&&(!subj||q.subj===subj));}
+
+/* ---------- 読み上げ ---------- */
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices();}catch(e){}}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+function pickVoice(lang){const l=lang.slice(0,2);return voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(l))||null;}
+function speak(text,lang){
+  if(!S.audio||!('speechSynthesis'in window)||!text)return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);
+    u.lang=lang;u.rate=lang.startsWith('ja')?1.0:0.82;u.pitch=1.05;
+    const v=pickVoice(lang);if(v)u.voice=v;
+    const b=document.getElementById('q-speak');
+    u.onstart=()=>b&&b.classList.add('playing');
+    u.onend=()=>b&&b.classList.remove('playing');
+    speechSynthesis.speak(u);}catch(e){}
+}
+function mathSay(s){
+  return s.replace(/\(−/g,'(マイナス').replace(/−/g,'ひく')
+    .replace(/×/g,'かける').replace(/÷/g,'わる').replace(/\+/g,'たす')
+    .replace(/=/g,'イコール').replace(/√/g,'ルート')
+    .replace(/²/g,'の2じょう').replace(/³/g,'の3じょう')
+    .replace(/x/g,'エックス').replace(/y/g,'ワイ').replace(/a/g,'エー').replace(/b/g,'ビー');
+}
+function sayForQ(item){
+  const o=item.opt;
+  if(o.say)return o.say;
+  if(o.plain)return 'つぎの ことばの よみかたは、どれかな？';
+  if(item.subj==='math')return mathSay(item.q);
+  if(item.subj==='english'){
+    const m=item.q.match(/（(.*?)）/);
+    if(m)return m[1]+'。えいごで いうと？';
+  }
+  return item.q;
+}
+function enForQ(item){
+  const o=item.opt;
+  if(o.en)return o.en;
+  if(item.subj!=='english')return null;
+  if(item.q.includes('___'))return item.q.replace(/_+/g,item.c[0]).replace(/（.*?）/g,'');
+  return item.c[0];
+}
+
+/* ---------- 画面切替 ---------- */
+function go(v){
+  ['home','units','quiz','done'].forEach(x=>document.getElementById('view-'+x).classList.toggle('hidden',x!==v));
+  if(v==='home')renderHome();
+  window.scrollTo(0,0);
+}
+function renderHome(){
+  document.getElementById('hud-streak').textContent=S.streak;
+  document.getElementById('hud-points').textContent=S.points;
+  const lv=levelOf(S.points),into=S.points%100;
+  document.getElementById('home-lv').textContent=lv;
+  document.getElementById('home-lvtxt').textContent=into+' / 100';
+  document.getElementById('home-lvbar').style.width=into+'%';
+  const h=new Date().getHours();
+  const greet=h<11?'おはよう':h<18?'こんにちは':'こんばんは';
+  document.getElementById('home-msg').innerHTML=greet+'、ちゆちゃん。<br>きょうも耳から10問、いこ♪';
+  document.getElementById('bank-count').textContent='5教科 '+TOTAL+'問 ・ ★=得意ゾーン';
+  const wrap=document.getElementById('subjects');wrap.innerHTML='';
+  for(const sid of SUBJ_ORDER){
+    const s=BANK[sid];
+    const total=s.units.reduce((n,u)=>n+u.qs.length,0);
+    const m=doneCount(sid),pct=Math.min(100,Math.round(m/total*100));
+    const b=document.createElement('button');b.className='subj';
+    b.onclick=()=>openUnits(sid);
+    b.innerHTML=(s.strong?'<span class="ear"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13a8 8 0 1116 0v3a3 3 0 01-3 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>得意</span>':'')+
+      '<div class="top"><span class="ic" style="background:'+s.color+'">'+s.name[0]+'</span>'+
+      '<span class="nm">'+s.name+'<em>'+s.sub+'</em></span></div>'+
+      '<div class="mrow"><div class="bar"><i style="width:'+pct+'%"></i></div><span class="cnt">'+m+'/'+total+'</span></div>';
+    wrap.appendChild(b);
+  }
+  document.getElementById('audiobtn').innerHTML=(S.audio
+    ?'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9a4 4 0 010 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>読み上げ ON'
+    :'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 9l4 6M21 9l-4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>読み上げ OFF');
+}
+
+/* ---------- 単元ビュー ---------- */
+let curSubj=null;
+function openUnits(sid){
+  curSubj=sid;const s=BANK[sid];
+  const total=s.units.reduce((n,u)=>n+u.qs.length,0);
+  document.getElementById('u-ic').style.background=s.color;
+  document.getElementById('u-ic').textContent=s.name[0];
+  document.getElementById('u-name').textContent=s.name;
+  document.getElementById('u-sub').textContent='全'+total+'問 ・ '+doneCount(sid)+'問クリア';
+  document.getElementById('u-omakase').onclick=()=>startSession({type:'subj',subj:sid});
+  const wl=wrongList(sid);
+  const rev=document.getElementById('u-rev');
+  if(wl.length){rev.classList.remove('hidden');
+    rev.innerHTML='にがてリベンジ <b>'+wl.length+'問</b> <small>まちがえた問題だけ</small>';
+    rev.onclick=()=>startSession({type:'wrong',subj:sid});
+  }else rev.classList.add('hidden');
+  const ul=document.getElementById('ulist');ul.innerHTML='';
+  s.units.forEach(u=>{
+    let d=0;u.qs.forEach((q,i)=>{if(S.done[u.id+'_'+i])d++;});
+    const pct=Math.round(d/u.qs.length*100);
+    const b=document.createElement('button');b.className='unit';
+    b.onclick=()=>startSession({type:'unit',subj:sid,unit:u.id});
+    b.innerHTML='<span class="un">'+u.name+
+      '<span class="st'+(d?'':' zero')+'">'+(d>=u.qs.length?'クリア！':d+'/'+u.qs.length)+'</span></span>'+
+      '<div class="mrow"><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
+    ul.appendChild(b);
+  });
+  go('units');
+}
+
+/* ---------- セッション ---------- */
+let queue=[],pos=0,uniqueTotal=10,uniqueDone=0,sCorrect=0,sPoints=0,answered=false,lastMode={type:'mix'},requeued;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pickTen(pool){
+  const unseen=shuffle(pool.filter(q=>!S.done[q.qid]&&!S.wrong[q.qid]));
+  const wrongs=shuffle(pool.filter(q=>S.wrong[q.qid]));
+  const dones=shuffle(pool.filter(q=>S.done[q.qid]&&!S.wrong[q.qid]));
+  let sel=unseen.slice(0,7);
+  sel=sel.concat(wrongs.slice(0,10-sel.length>3?3:10-sel.length));
+  if(sel.length<10)sel=sel.concat(unseen.slice(7,7+(10-sel.length)));
+  if(sel.length<10)sel=sel.concat(wrongs.slice(3,3+(10-sel.length)));
+  if(sel.length<10)sel=sel.concat(dones.slice(0,10-sel.length));
+  return shuffle(sel).slice(0,10);
+}
+function startSession(mode){
+  lastMode=mode;
+  let pool;
+  if(mode.type==='mix')pool=ALLQ;
+  else if(mode.type==='subj')pool=ALLQ.filter(q=>q.subj===mode.subj);
+  else if(mode.type==='unit')pool=ALLQ.filter(q=>q.unit===mode.unit);
+  else pool=wrongList(mode.subj);
+  let sel=(mode.type==='wrong')?shuffle(pool).slice(0,10):pickTen(pool);
+  if(!sel.length){go('home');return;}
+  queue=sel;uniqueTotal=sel.length;uniqueDone=0;pos=0;sCorrect=0;sPoints=0;requeued=new Set();
+  go('quiz');renderDots();renderQ();
+}
+function renderDots(){const d=document.getElementById('dots');d.innerHTML='';
+  for(let i=0;i<uniqueTotal;i++){const el=document.createElement('i');
+    if(i<uniqueDone)el.className='done';else if(i===uniqueDone)el.className='cur';d.appendChild(el);}}
+function renderQ(){
+  answered=false;
+  const item=queue[pos];
+  document.getElementById('q-subj').textContent=BANK[item.subj].name;
+  document.getElementById('q-tag').textContent=item.unitName;
+  document.getElementById('q-text').textContent=item.q.replace(/___/g,'（　）');
+  const ch=document.getElementById('choices');ch.innerHTML='';
+  const keys=['A','B','C','D'];
+  const order=shuffle([0,1,2,3]);
+  order.forEach((ci,slot)=>{
+    const b=document.createElement('button');b.className='choice';b.dataset.ci=ci;
+    const sp1=document.createElement('span');sp1.className='key';sp1.textContent=keys[slot];
+    const sp2=document.createElement('span');sp2.textContent=item.c[ci];
+    b.appendChild(sp1);b.appendChild(sp2);
+    b.onclick=()=>answer(ci,b);ch.appendChild(b);
+  });
+  const fb=document.getElementById('fb');fb.className='fb';
+  const fo=fb.querySelector('.owl');if(fo)fo.classList.remove('happy');
+  document.getElementById('nextbtn').classList.add('hidden');
+  speak(sayForQ(item),'ja-JP');
+}
+function replay(){speak(sayForQ(queue[pos]),'ja-JP');}
+function answer(ci,btn){
+  if(answered)return;answered=true;
+  const item=queue[pos],correct=(ci===0);
+  document.querySelectorAll('.choice').forEach(n=>{
+    n.setAttribute('disabled','');
+    const isC=n.dataset.ci==='0';
+    if(isC){n.classList.add('correct');const mk=document.createElement('span');mk.className='mk';mk.textContent='◎';n.appendChild(mk);}
+    else if(n===btn){n.classList.add('wrong');}
+  });
+  const fb=document.getElementById('fb'),txt=document.getElementById('fb-txt');
+  const fo=fb.querySelector('.owl');if(fo)fo.classList.toggle('happy',correct);
+  if(correct){
+    fb.classList.add('good','show');
+    txt.innerHTML=GOOD[Math.floor(Math.random()*GOOD.length)]+'<small>+10ポイント</small>';
+    sCorrect++;sPoints+=10;S.points+=10;
+    S.done[item.qid]=1;delete S.wrong[item.qid];save();
+    document.getElementById('hud-points').textContent=S.points;
+    pop();
+  }else{
+    fb.classList.add('soft','show');
+    txt.innerHTML=SOFT[Math.floor(Math.random()*SOFT.length)]+'<small>こたえは「'+item.c[0]+'」だよ</small>';
+    S.wrong[item.qid]=1;save();
+    if(!requeued.has(item.qid)){requeued.add(item.qid);queue.push(item);}
+  }
+  const en=enForQ(item);
+  if(en)setTimeout(()=>speak(en,'en-US'),correct?450:800);
+  document.getElementById('nextbtn').classList.remove('hidden');
+}
+function nextQ(){
+  uniqueDone=Math.min(uniqueTotal,uniqueDone+1);
+  pos++;
+  if(pos>=queue.length){finish();return;}
+  renderDots();renderQ();window.scrollTo(0,0);
+}
+function quitSession(){
+  try{speechSynthesis.cancel();}catch(e){}
+  if(uniqueDone>0||sCorrect>0)finish();else go('home');
+}
+function finish(){
+  const t=todayStr();
+  if(S.last!==t){
+    const y=new Date();y.setDate(y.getDate()-1);
+    const yStr=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
+    S.streak=(S.last===yStr)?S.streak+1:1;S.last=t;
+  }
+  save();
+  document.getElementById('d-correct').textContent=sCorrect;
+  document.getElementById('d-points').textContent=sPoints;
+  document.getElementById('d-streak').textContent=S.streak;
+  document.getElementById('done-sub').textContent='きょうは '+Math.max(uniqueDone,1)+'問 に ちょうせん！';
+  document.getElementById('done-msg').textContent=DONEMSG[Math.floor(Math.random()*DONEMSG.length)];
+  const de=document.querySelector('#view-done .owl');if(de)de.classList.add('happy');
+  go('done');confetti();
+  speak(sCorrect>=uniqueTotal*0.7?'すごい、よくできたね！':'よくがんばったね。','ja-JP');
+}
+
+/* ---------- 演出 ---------- */
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function pop(){if(reduce)return;const c=document.querySelector('.qcard');if(!c)return;
+  c.animate([{transform:'scale(1)'},{transform:'scale(1.02)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});}
+function confetti(){
+  if(reduce)return;const cv=document.getElementById('confetti');const ctx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const cols=['#EC5A76','#F5A63C','#1EAF95','#8A6BD6','#4C86E0'];
+  let ps=[];for(let i=0;i<90;i++)ps.push({x:innerWidth/2,y:innerHeight*0.32,
+    vx:(Math.random()-0.5)*9,vy:Math.random()*-11-3,g:0.32,
+    s:6+Math.random()*6,r:Math.random()*6.28,vr:(Math.random()-0.5)*0.4,
+    c:cols[i%cols.length],life:1});
+  let t=0;function fr(){t++;ctx.clearRect(0,0,cv.width,cv.height);let alive=false;
+    ps.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.life-=0.007;
+      if(p.y<cv.height+20&&p.life>0){alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);
+        ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);ctx.restore();}});
+    if(alive&&t<160)requestAnimationFrame(fr);else ctx.clearRect(0,0,cv.width,cv.height);}
+  requestAnimationFrame(fr);
+}
+
+/* ---------- 設定 ---------- */
+function toggleAudio(){S.audio=!S.audio;save();if(S.audio)speak('読み上げ、オンにしたよ','ja-JP');renderHome();}
+function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');
+  const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');}
+function resetAll(){if(confirm('ポイント・れんぞく日数・クリア記録を さいしょから にする？')){
+  S={points:0,streak:0,last:'',audio:S.audio,done:{},wrong:{}};save();renderHome();}}
+
+/* ---------- 起動 ---------- */
+go('home');
+
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
