@@ -234,6 +234,47 @@
   .owl .eyes{transform-origin:center;transform-box:fill-box;animation:blink 5.5s infinite}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .bob{animation:bob 3.4s ease-in-out infinite}
+
+  /* ---------- ごほうびスタンプシート ---------- */
+  .reward{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:18px 18px 20px;margin-top:16px}
+  .reward-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .reward-top h3{font-family:var(--fnt-round);font-weight:800;font-size:15px;margin:0}
+  .reward-top .sheets{margin-left:auto;font-family:var(--fnt-round);font-weight:800;font-size:13px;color:var(--gold);
+    background:var(--gold-soft);padding:4px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
+  .reward-goal{font-size:12px;font-weight:700;color:var(--primary-deep);margin:2px 0 12px}
+  .reward-goal b{font-family:var(--fnt-round)}
+  .sheet{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+  .slot{aspect-ratio:1;border-radius:15px;display:grid;place-items:center;font-size:26px;position:relative;
+    background:var(--tint);border:2px dashed var(--line)}
+  .slot.filled{border-style:solid;border-color:transparent;
+    background:radial-gradient(circle at 50% 38%, color-mix(in srgb,var(--gold) 22%,var(--surface)), var(--surface));
+    box-shadow:var(--shadow-sm);animation:stampin .45s cubic-bezier(.2,1.3,.4,1) both}
+  .slot.filled.sparkle::after{content:"✨";position:absolute;top:-6px;right:-4px;font-size:14px}
+  .slot .no{position:absolute;bottom:4px;font-size:9px;font-weight:800;color:var(--ink-soft);opacity:.5}
+  @keyframes stampin{0%{transform:scale(2.4) rotate(-18deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+  .daily{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;font-weight:700;color:var(--ink-soft)}
+  .daily .dbar{flex:1;height:9px;border-radius:999px;background:var(--tint);overflow:hidden}
+  .daily .dbar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--gold));width:0;transition:width .5s}
+  .daily .dnum{font-family:var(--fnt-round);font-weight:800;color:var(--mint-ink)}
+  /* done画面のスタンプゲット */
+  .gotstamp{margin:6px auto 2px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .gotstamp .big{width:76px;height:76px;border-radius:22px;display:grid;place-items:center;font-size:42px;
+    background:radial-gradient(circle at 50% 38%, var(--gold-soft), var(--surface));box-shadow:var(--shadow);
+    animation:stampin .5s cubic-bezier(.2,1.3,.4,1) both}
+  .gotstamp .lbl{font-family:var(--fnt-round);font-weight:800;font-size:14px;color:var(--gold)}
+  .gotstamp.none{display:none}
+  /* シート完成モーダル */
+  .modal{position:fixed;inset:0;z-index:70;display:none;place-items:center;padding:24px;
+    background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(3px)}
+  .modal.show{display:grid}
+  .modal .box{background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:30px 24px;text-align:center;
+    max-width:340px;width:100%;animation:stampin .5s cubic-bezier(.2,1.3,.4,1) both}
+  .modal .crown{font-size:56px;line-height:1}
+  .modal h2{font-family:var(--fnt-round);font-weight:800;font-size:22px;margin:8px 0 4px;color:var(--primary-deep)}
+  .modal p{font-size:13.5px;color:var(--ink-soft);font-weight:700;margin:0 0 6px}
+  .modal .card-em{font-size:15px;font-weight:800;color:var(--gold);margin:10px 0 18px;font-family:var(--fnt-round)}
+  .modal button{border:0;cursor:pointer;font-family:var(--fnt-round);font-weight:800;font-size:16px;padding:14px 28px;border-radius:16px;
+    color:var(--on-primary);background:linear-gradient(140deg,var(--primary),var(--primary-deep));box-shadow:var(--shadow-sm)}
 </style>
 
 <div class="app">
@@ -259,6 +300,20 @@
         </div>
       </div>
       <button class="cta" onclick="startSession({type:'mix'})">きょうの15分をはじめる<span class="sub">5教科ミックス10問 ・ ぜんぶ読み上げつき</span></button>
+    </div>
+
+    <div class="reward">
+      <div class="reward-top">
+        <h3>🎁 ごほうびスタンプシート</h3>
+        <span class="sheets" id="rw-sheets">🏅 0まい</span>
+      </div>
+      <div class="reward-goal" id="rw-goal"></div>
+      <div class="sheet" id="rw-sheet"></div>
+      <div class="daily">
+        <span>きょう</span>
+        <div class="dbar"><i id="rw-dbar"></i></div>
+        <span class="dnum" id="rw-dnum">0/3</span>
+      </div>
     </div>
 
     <div class="sechead"><h2>教科をえらぶ</h2><span id="bank-count"></span></div>
@@ -310,6 +365,7 @@
       <div class="done-owl bob"></div>
       <div class="done-h" id="done-h">セット、かんりょう！</div>
       <div class="done-sub" id="done-sub"></div>
+      <div class="gotstamp none" id="gotstamp"><div class="big" id="gotstamp-em">🦉</div><div class="lbl">スタンプ ゲット！</div></div>
       <div class="stats">
         <div class="stat mint"><b id="d-correct">0</b><span>せいかい</span></div>
         <div class="stat gold"><b id="d-points">0</b><span>ポイント</span></div>
@@ -322,6 +378,15 @@
       </div>
     </div>
   </section>
+</div>
+<div class="modal" id="sheet-modal">
+  <div class="box">
+    <div class="crown">🏅</div>
+    <h2>シート かんせい！</h2>
+    <p id="modal-sub">スタンプ10こ、ぜんぶ集まったよ！</p>
+    <div class="card-em" id="modal-card"></div>
+    <button onclick="closeSheetModal()">やったー！つぎのシートへ</button>
+  </div>
 </div>
 <canvas id="confetti"></canvas>
 
@@ -991,12 +1056,22 @@ const DONEMSG=['よくがんばったね。ちゃんと前に進んでるよ。'
 const KEY='mimizuku_v3';
 let S=load();
 function load(){
-  try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.done)return r;}catch(e){}
-  let base={points:0,streak:0,last:'',audio:true,done:{},wrong:{}};
-  try{const old=JSON.parse(localStorage.getItem('mimizuku_v2'));
-    if(old){base.points=old.points||0;base.streak=old.streak||0;base.last=old.last||'';base.audio=old.audio!==false;}}catch(e){}
-  return base;
+  let s=null;
+  try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.done)s=r;}catch(e){}
+  if(!s){
+    s={points:0,streak:0,last:'',audio:true,done:{},wrong:{}};
+    try{const old=JSON.parse(localStorage.getItem('mimizuku_v2'));
+      if(old){s.points=old.points||0;s.streak=old.streak||0;s.last=old.last||'';s.audio=old.audio!==false;}}catch(e){}
+  }
+  // ごほうびスタンプ関連の後方互換（古い保存にフィールドを足す）
+  if(!Array.isArray(s.stamps))s.stamps=[];
+  if(typeof s.sheets!=='number')s.sheets=0;
+  if(typeof s.dayKey!=='string')s.dayKey='';
+  if(typeof s.dayStamps!=='number')s.dayStamps=0;
+  return s;
 }
+const STAMP_EM=['🦉','⭐','🌸','👑','🌈','🎀','🍀','🎵','🧁','💎'];
+const DAILY_GOAL=3;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function levelOf(p){return Math.floor(p/100)+1;}
@@ -1061,6 +1136,7 @@ function renderHome(){
   const greet=h<11?'おはよう':h<18?'こんにちは':'こんばんは';
   document.getElementById('home-msg').innerHTML=greet+'、ちゆちゃん。<br>きょうも耳から10問、いこ♪';
   document.getElementById('bank-count').textContent='5教科 '+TOTAL+'問 ・ ★=得意ゾーン';
+  renderStampSheet();
   const wrap=document.getElementById('subjects');wrap.innerHTML='';
   for(const sid of SUBJ_ORDER){
     const s=BANK[sid];
@@ -1077,6 +1153,42 @@ function renderHome(){
   document.getElementById('audiobtn').innerHTML=(S.audio
     ?'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9a4 4 0 010 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>読み上げ ON'
     :'<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 9l4 6M21 9l-4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>読み上げ OFF');
+}
+
+/* ---------- ごほうびスタンプ ---------- */
+function renderStampSheet(){
+  const sheet=document.getElementById('rw-sheet');sheet.innerHTML='';
+  for(let i=0;i<10;i++){
+    const d=document.createElement('div');
+    const got=S.stamps[i];
+    if(got){d.className='slot filled'+(got.sparkle?' sparkle':'');d.textContent=got.em;}
+    else{d.className='slot';d.innerHTML='<span class="no">'+(i+1)+'</span>';}
+    sheet.appendChild(d);
+  }
+  const left=10-S.stamps.length;
+  document.getElementById('rw-goal').innerHTML=left>0
+    ? 'あと <b>'+left+'こ</b> で 1まい かんせい！（1セットやりきると1こ たまるよ）'
+    : 'コンプリート！ もう1セットで新しいシートがはじまるよ✨';
+  document.getElementById('rw-sheets').textContent='🏅 '+S.sheets+'まい';
+  syncDaily();
+  const dg=Math.min(S.dayStamps,DAILY_GOAL);
+  document.getElementById('rw-dbar').style.width=Math.round(dg/DAILY_GOAL*100)+'%';
+  document.getElementById('rw-dnum').textContent=S.dayStamps+'/'+DAILY_GOAL;
+}
+function syncDaily(){const t=todayStr();if(S.dayKey!==t){S.dayKey=t;S.dayStamps=0;save();}}
+// スタンプを1個追加。満杯になったら{full:true}を返す
+function addStamp(perfect){
+  syncDaily();
+  if(S.stamps.length>=10)completeSheet(); // 前回の満杯シートが未確定なら先に確定（アプリを途中で閉じた場合の保険）
+  const idx=S.stamps.length; // 0..9 のマスに順番で入る
+  S.stamps.push({em:STAMP_EM[idx],sparkle:!!perfect});
+  S.dayStamps++;
+  const full=(S.stamps.length>=10);
+  save();
+  return {em:STAMP_EM[idx],full:full};
+}
+function completeSheet(){ // 満杯シートを確定して新品にする
+  S.sheets++;S.stamps=[];save();
 }
 
 /* ---------- 単元ビュー ---------- */
@@ -1110,7 +1222,7 @@ function openUnits(sid){
 }
 
 /* ---------- セッション ---------- */
-let queue=[],pos=0,uniqueTotal=10,uniqueDone=0,sCorrect=0,sPoints=0,answered=false,lastMode={type:'mix'},requeued;
+let queue=[],pos=0,uniqueTotal=10,uniqueDone=0,sCorrect=0,sPoints=0,answered=false,lastMode={type:'mix'},requeued,combo=0,sWrong=0;
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function pickTen(pool){
   const unseen=shuffle(pool.filter(q=>!S.done[q.qid]&&!S.wrong[q.qid]));
@@ -1132,7 +1244,7 @@ function startSession(mode){
   else pool=wrongList(mode.subj);
   let sel=(mode.type==='wrong')?shuffle(pool).slice(0,10):pickTen(pool);
   if(!sel.length){go('home');return;}
-  queue=sel;uniqueTotal=sel.length;uniqueDone=0;pos=0;sCorrect=0;sPoints=0;requeued=new Set();
+  queue=sel;uniqueTotal=sel.length;uniqueDone=0;pos=0;sCorrect=0;sPoints=0;requeued=new Set();combo=0;sWrong=0;
   go('quiz');renderDots();renderQ();
 }
 function renderDots(){const d=document.getElementById('dots');d.innerHTML='';
@@ -1172,13 +1284,16 @@ function answer(ci,btn){
   const fb=document.getElementById('fb'),txt=document.getElementById('fb-txt');
   const fo=fb.querySelector('.owl');if(fo)fo.classList.toggle('happy',correct);
   if(correct){
+    combo++;
     fb.classList.add('good','show');
-    txt.innerHTML=GOOD[Math.floor(Math.random()*GOOD.length)]+'<small>+10ポイント</small>';
+    const comboTag=combo>=2?' <b style="color:var(--gold)">'+combo+'れんぞく！🔥</b>':'';
+    txt.innerHTML=GOOD[Math.floor(Math.random()*GOOD.length)]+comboTag+'<small>+10ポイント</small>';
     sCorrect++;sPoints+=10;S.points+=10;
     S.done[item.qid]=1;delete S.wrong[item.qid];save();
     document.getElementById('hud-points').textContent=S.points;
     pop();
   }else{
+    combo=0;sWrong++;
     fb.classList.add('soft','show');
     txt.innerHTML=SOFT[Math.floor(Math.random()*SOFT.length)]+'<small>こたえは「'+item.c[0]+'」だよ</small>';
     S.wrong[item.qid]=1;save();
@@ -1205,6 +1320,20 @@ function finish(){
     const yStr=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
     S.streak=(S.last===yStr)?S.streak+1:1;S.last=t;
   }
+  // セットを「やりきった」ときだけスタンプ1個（早めにやめた時は付かない）
+  const completed=(uniqueDone>=uniqueTotal);
+  let sheetFull=false, gotEm=null;
+  const got=document.getElementById('gotstamp');
+  if(completed){
+    const perfect=(sWrong===0);
+    const res=addStamp(perfect);
+    gotEm=res.em;sheetFull=res.full;
+    got.classList.remove('none');
+    document.getElementById('gotstamp-em').textContent=res.em;
+    got.querySelector('.lbl').textContent=perfect?'キラキラ スタンプ ゲット！✨':'スタンプ ゲット！';
+  }else{
+    got.classList.add('none');
+  }
   save();
   document.getElementById('d-correct').textContent=sCorrect;
   document.getElementById('d-points').textContent=sPoints;
@@ -1214,6 +1343,19 @@ function finish(){
   const de=document.querySelector('#view-done .owl');if(de)de.classList.add('happy');
   go('done');confetti();
   speak(sCorrect>=uniqueTotal*0.7?'すごい、よくできたね！':'よくがんばったね。','ja-JP');
+  if(sheetFull){setTimeout(showSheetModal,900);}
+}
+function showSheetModal(){
+  document.getElementById('modal-card').textContent='ごほうびカード「'+STAMP_EM.join(' ')+'」を てにいれた！';
+  document.getElementById('modal-sub').textContent='スタンプ10こ、ぜんぶ集まったよ！（これで '+(S.sheets+1)+'まいめ）';
+  document.getElementById('sheet-modal').classList.add('show');
+  confetti();
+  speak('シート かんせい！すごいね、よくがんばったね！','ja-JP');
+}
+function closeSheetModal(){
+  if(S.stamps.length>=10)completeSheet(); // シートを確定→新品に
+  document.getElementById('sheet-modal').classList.remove('show');
+  go('home');
 }
 
 /* ---------- 演出 ---------- */
@@ -1241,8 +1383,8 @@ function toggleAudio(){S.audio=!S.audio;save();if(S.audio)speak('読み上げ、
 function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme');
   const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
   document.documentElement.setAttribute('data-theme',dark?'light':'dark');}
-function resetAll(){if(confirm('ポイント・れんぞく日数・クリア記録を さいしょから にする？')){
-  S={points:0,streak:0,last:'',audio:S.audio,done:{},wrong:{}};save();renderHome();}}
+function resetAll(){if(confirm('ポイント・れんぞく日数・クリア記録・スタンプを さいしょから にする？')){
+  S={points:0,streak:0,last:'',audio:S.audio,done:{},wrong:{},stamps:[],sheets:0,dayKey:'',dayStamps:0};save();renderHome();}}
 
 /* ---------- 起動 ---------- */
 go('home');
